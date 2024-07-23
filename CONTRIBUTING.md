@@ -170,11 +170,17 @@ At a high level, the steps involved in adding a new lint rule are as follows:
 1. Create a file for your rule (e.g., `crates/ruff_linter/src/rules/flake8_bugbear/rules/assert_false.rs`).
 
 1. In that file, define a violation struct (e.g., `pub struct AssertFalse`). You can grep for
-    `#[violation]` to see examples.
+    `#[violation]` to see examples. Implement the `Violation`
+    (resp. `AlwaysFixableViolation`) trait as appropriate to
+    display the diagnostic message (resp. diagnostic message
+    and fix message.)
 
 1. In that file, define a function that adds the violation to the diagnostic list as appropriate
     (e.g., `pub(crate) fn assert_false`) based on whatever inputs are required for the rule (e.g.,
-    an `ast::StmtAssert` node).
+    an `ast::StmtAssert` node). To implement an autofix, create
+    an `Edit` object (`crates/ruff_diagnostics/src/edit.rs`) and
+    add the corresponding `Fix` (`crates/ruff_diagnostics/src/fix.rs`)
+    to your diagnostic using the `with_fix` method.
 
 1. Define the logic for invoking the diagnostic in `crates/ruff_linter/src/checkers/ast/analyze` (for
     AST-based rules), `crates/ruff_linter/src/checkers/tokens.rs` (for token-based rules),
