@@ -82,6 +82,8 @@ pub(crate) fn useless_expression(checker: &mut Checker, value: &Expr) {
         value,
         Expr::FString(_) | Expr::StringLiteral(_) | Expr::EllipsisLiteral(_)
     ) {
+        dbg!("Ignore strings!");
+        dbg!(&value);
         return;
     }
 
@@ -95,21 +97,29 @@ pub(crate) fn useless_expression(checker: &mut Checker, value: &Expr) {
         return;
     }
 
-    // Ignore statements that have side effects.
-    if contains_effect(value, |id| checker.semantic().has_builtin_binding(id)) {
-        // Flag attributes as useless expressions, even if they're attached to calls or other
-        // expressions.
-        if value.is_attribute_expr() {
-            checker.diagnostics.push(Diagnostic::new(
-                UselessExpression {
-                    kind: Kind::Attribute,
-                },
-                value.range(),
-            ));
-        }
+    // Ignore certain statements that have side effects.
+    // For example, if `f` has a side effect, one could
+    // cause that side effect to trigger 10 times by doing:
+    // `[f() for _ in range(10)]`.
+    if matches!(
+        value,
+        Expr::ListComp(_) | Expr::SetComp(_) | Expr::DictComp(_) | Expr::Call(_)
+    ) & contains_effect(value, |id| checker.semantic().has_builtin_binding(id))
+    {
+        dbg!("Ignore some side effects!");
+        dbg!(&value);
         return;
     }
-
+    // Flag attributes as useless expressions, even if they're attached to calls or other
+    // expressions.
+    if value.is_attribute_expr() {
+        checker.diagnostics.push(Diagnostic::new(
+            UselessExpression {
+                kind: Kind::Attribute,
+            },
+            value.range(),
+        ));
+    }
     checker.diagnostics.push(Diagnostic::new(
         UselessExpression {
             kind: Kind::Expression,

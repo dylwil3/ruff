@@ -63,3 +63,21 @@ def foo5():
     foo.bar  # Attribute (raise)
     object().__class__  # Attribute (raise)
     "foo" + "bar"  # BinOp (raise)
+
+# See https://github.com/astral-sh/ruff/issues/14131
+def foo6(): ...
+
+# Ok
+foo6()
+[foo6() for _ in range(10)]
+{foo6() for _ in range(10)}
+{"a":foo6() for _ in range(10)}
+# Raise
+[1, 2, foo6()]
+print("foo"),
+[x for x in [1,2,3]]
+[x for x in foo6()]
+[x for x in range(10)]
+foo6() + foo6()
+(foo6() for _ in range(10))
+
