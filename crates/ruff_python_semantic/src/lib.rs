@@ -1,6 +1,7 @@
 pub mod analyze;
 mod binding;
 mod branches;
+pub mod cfg;
 mod context;
 mod definition;
 mod globals;
@@ -13,6 +14,7 @@ mod star_import;
 
 pub use binding::*;
 pub use branches::*;
+pub use cfg::*;
 pub use context::*;
 pub use definition::*;
 pub use globals::*;
