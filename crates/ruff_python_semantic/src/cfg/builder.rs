@@ -1,6 +1,26 @@
 use ruff_python_ast::{ExceptHandler, Expr, MatchCase, Stmt};
 
+pub trait ControlFlowGraph<'stmt> {
+    type Block: Copy;
+    type Edge: ControlEdge<'stmt, Block = Self::Block>;
+
+    fn initial(&self) -> Self::Block;
+
+    fn terminal(&self) -> Self::Block;
+
+    fn num_blocks(&self) -> usize;
+
+    /// Get all statements in a block
+    fn stmts(&self, block: Self::Block) -> impl IntoIterator<Item = &'stmt Stmt>;
+
+    /// Get outgoing edge from block
+    /// (Note that an `Edge` actually represents multiple edges... confusingly
+    /// we should probably change the name.)
+    fn out(&self, block: Self::Block) -> &Self::Edge;
+}
+
 /// Represents a condition to be tested in a multi-way branch
+#[derive(Debug, Clone)]
 pub enum Condition<'stmt> {
     /// A boolean test expression
     Test(&'stmt Expr),
@@ -37,6 +57,7 @@ pub trait ControlEdge<'stmt> {
 pub trait CFGBuilder<'stmt> {
     type BasicBlock: Copy;
     type Edge: ControlEdge<'stmt, Block = Self::BasicBlock>;
+    type Graph: ControlFlowGraph<'stmt, Block = Self::BasicBlock, Edge = Self::Edge>;
 
     /// Creates a new CFG builder, creating initial and terminal blocks internally.
     fn new() -> Self;
@@ -66,6 +87,19 @@ pub trait CFGBuilder<'stmt> {
     /// Creates a new basic block.
     fn new_block(&mut self) -> Self::BasicBlock;
 
+    /// Creates a new block if there are more statements to process,
+    /// otherwise returns the terminal block
+    fn next_or_terminal<I>(&mut self, stmts: &mut std::iter::Peekable<I>) -> Self::BasicBlock
+    where
+        I: Iterator<Item = &'stmt Stmt>,
+    {
+        if stmts.peek().is_some() {
+            self.new_block()
+        } else {
+            self.terminal()
+        }
+    }
+
     /// Creates a new block to handle entering and exiting a loop body.
     fn new_loop_guard(&mut self, stmt: &'stmt Stmt) -> Self::BasicBlock;
 
@@ -75,15 +109,6 @@ pub trait CFGBuilder<'stmt> {
     /// Creates basic blocks and edges from a sequence of statements.
     fn process_stmts(&mut self, stmts: impl IntoIterator<Item = &'stmt Stmt>) {
         let mut stmts = stmts.into_iter().peekable();
-
-        // If we have any statements, create a new block for them
-        // since we're likely starting at the initial block
-        if stmts.peek().is_some() {
-            let new_block = self.new_block();
-            let edge = Self::Edge::always(new_block);
-            self.add_edge(edge);
-            self.move_to(new_block);
-        }
 
         while let Some(stmt) = stmts.next() {
             match stmt {
@@ -106,7 +131,7 @@ pub trait CFGBuilder<'stmt> {
                 // Loops
                 Stmt::While(stmt_while) => {
                     // Create a new block for any following statements
-                    let next_block = self.new_block();
+                    let next_block = self.next_or_terminal(&mut stmts);
 
                     // Create the loop guard block with the test
                     let guard = self.new_loop_guard(stmt);
@@ -118,10 +143,26 @@ pub trait CFGBuilder<'stmt> {
                     self.push_loop_exit(next_block);
 
                     // Add the conditional edge from guard
-                    let conditions = vec![
-                        (Condition::Test(&stmt_while.test), body),
-                        (Condition::Always, next_block),
-                    ];
+                    let (conditions, else_block) = if stmt_while.orelse.is_empty() {
+                        // No else clause - fail straight to next block
+                        (
+                            vec![
+                                (Condition::Test(&stmt_while.test), body),
+                                (Condition::Always, next_block),
+                            ],
+                            None,
+                        )
+                    } else {
+                        // Create else block and route normal exit through it
+                        let else_block = self.new_block();
+                        (
+                            vec![
+                                (Condition::Test(&stmt_while.test), body),
+                                (Condition::Always, else_block),
+                            ],
+                            Some(else_block),
+                        )
+                    };
                     let edge = Self::Edge::switch(conditions);
                     self.add_edge(edge);
 
@@ -140,35 +181,66 @@ pub trait CFGBuilder<'stmt> {
                     let edge = Self::Edge::always(guard);
                     self.add_edge(edge);
 
+                    // Process else clause if it exists
+                    if let Some(else_block) = else_block {
+                        self.move_to(else_block);
+                        self.update_exit(next_block);
+                        self.process_stmts(&stmt_while.orelse);
+                    }
+
                     // Clean up loop context and continue from next block
                     self.pop_loop_exit();
                     self.move_to(next_block);
                 }
                 Stmt::For(stmt_for) => {
                     // Create a new block for any following statements
-                    let next_block = self.new_block();
+                    let next_block = self.next_or_terminal(&mut stmts);
 
                     // Create the loop guard block with the iterator
                     let guard = self.new_loop_guard(stmt);
 
-                    // Create a block for the loop body
+                    // Create blocks for the loop body and else clause
                     let body = self.new_block();
 
                     // Set up break/continue targets
+                    // break jumps directly to next_block, skipping else clause
                     self.push_loop_exit(next_block);
 
                     // Add the conditional edge from guard
-                    let conditions = vec![
+                    let (conditions, else_block) = if stmt_for.orelse.is_empty() {
                         (
-                            Condition::Iterator {
-                                target: &stmt_for.target,
-                                iter: &stmt_for.iter,
-                                is_async: stmt_for.is_async,
-                            },
-                            body,
-                        ),
-                        (Condition::Always, next_block),
-                    ];
+                            vec![
+                                (
+                                    Condition::Iterator {
+                                        target: &stmt_for.target,
+                                        iter: &stmt_for.iter,
+                                        is_async: stmt_for.is_async,
+                                    },
+                                    body,
+                                ),
+                                (Condition::Always, next_block),
+                            ],
+                            None,
+                        )
+                    } else {
+                        let else_block = self.new_block();
+                        (
+                            vec![
+                                (
+                                    Condition::Iterator {
+                                        target: &stmt_for.target,
+                                        iter: &stmt_for.iter,
+                                        is_async: stmt_for.is_async,
+                                    },
+                                    body,
+                                ),
+                                // Normal loop exit goes to else clause
+                                (Condition::Always, else_block),
+                            ],
+                            Some(else_block),
+                        )
+                    };
+
                     let edge = Self::Edge::switch(conditions);
                     self.add_edge(edge);
 
@@ -187,6 +259,13 @@ pub trait CFGBuilder<'stmt> {
                     let edge = Self::Edge::always(guard);
                     self.add_edge(edge);
 
+                    // Process else clause with next_block as its exit
+                    if let Some(else_block) = else_block {
+                        self.move_to(else_block);
+                        self.update_exit(next_block);
+                        self.process_stmts(&stmt_for.orelse);
+                    }
+
                     // Clean up loop context and continue from next block
                     self.pop_loop_exit();
                     self.move_to(next_block);
@@ -195,7 +274,7 @@ pub trait CFGBuilder<'stmt> {
                 // Switch statements
                 Stmt::If(stmt_if) => {
                     // Create a new block for any following statements
-                    let next_block = self.new_block();
+                    let next_block = self.next_or_terminal(&mut stmts);
 
                     // Create a vec of conditions and their target blocks
                     let mut conditions = Vec::new();
@@ -255,7 +334,7 @@ pub trait CFGBuilder<'stmt> {
                 }
                 Stmt::Match(stmt_match) => {
                     // Create a new block for any following statements
-                    let next_block = self.new_block();
+                    let next_block = self.next_or_terminal(&mut stmts);
 
                     // Create a vec of conditions and their target blocks
                     let mut conditions = Vec::new();
@@ -343,7 +422,7 @@ pub trait CFGBuilder<'stmt> {
             }
         }
 
-        // End by connecting the current block to the terminal block
+        // End by connecting the current block to the terminal block.
         let edge = Self::Edge::always(self.terminal());
         self.add_edge(edge);
     }
@@ -359,4 +438,6 @@ pub trait CFGBuilder<'stmt> {
     /// Pops and returns the most recently pushed loop exit block.
     /// This is called when finishing the processing of a loop construct.
     fn pop_loop_exit(&mut self) -> Self::BasicBlock;
+
+    fn build(self) -> Self::Graph;
 }
