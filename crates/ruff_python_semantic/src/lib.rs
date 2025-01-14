@@ -14,7 +14,6 @@ mod star_import;
 
 pub use binding::*;
 pub use branches::*;
-pub use cfg::*;
 pub use context::*;
 pub use definition::*;
 pub use globals::*;

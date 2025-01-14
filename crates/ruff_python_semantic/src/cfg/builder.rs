@@ -49,6 +49,8 @@ pub trait ControlEdge<'stmt> {
 
     /// Creates a multi-way branch based on conditions
     fn switch(conditions: Vec<(Condition<'stmt>, Self::Block)>) -> Self;
+
+    fn targets(&self) -> impl Iterator<Item = Self::Block>;
 }
 
 /// A trait for building Control Flow Graphs (CFG).
