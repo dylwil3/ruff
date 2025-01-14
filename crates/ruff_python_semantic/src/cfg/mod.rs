@@ -174,3 +174,4 @@
 //! I guess there could be some context about being unreachable
 //! or something...? Or maybe no special casing is required? Unclear.
 pub(crate) mod builder;
+pub(crate) mod implementations;
