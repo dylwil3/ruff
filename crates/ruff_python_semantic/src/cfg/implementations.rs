@@ -35,8 +35,12 @@ impl<'stmt> ControlEdge<'stmt> for NextBlock<'stmt> {
         }
     }
 
-    fn targets(&self) -> impl Iterator<Item = Self::Block> {
+    fn targets(&self) -> impl Iterator<Item = Self::Block> + ExactSizeIterator {
         self.targets.iter().copied()
+    }
+
+    fn conditions(&self) -> impl Iterator<Item = Condition<'stmt>> {
+        self.conditions.iter().cloned()
     }
 }
 
@@ -143,15 +147,15 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
         }
     }
 
-    fn current(&mut self) -> Self::BasicBlock {
+    fn current(&self) -> Self::BasicBlock {
         self.current
     }
 
-    fn current_exit(&mut self) -> Self::BasicBlock {
+    fn current_exit(&self) -> Self::BasicBlock {
         self.current_exit
     }
 
-    fn terminal(&mut self) -> Self::BasicBlock {
+    fn terminal(&self) -> Self::BasicBlock {
         self.cfg.terminal
     }
 
@@ -198,6 +202,10 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
 
     fn build(self) -> Self::Graph {
         self.cfg
+    }
+
+    fn at_terminal(&self) -> bool {
+        self.current() == self.terminal()
     }
 }
 
