@@ -1,0 +1,386 @@
+---
+source: crates/ruff_python_semantic/src/cfg/mod.rs
+description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
+---
+## Function 0
+### Source
+```python
+def func():
+    try:
+        print("try")
+    except Exception:
+        print("Exception")
+    except OtherException as e:
+        print("OtherException")
+    else:
+        print("else")
+    finally:
+        print("finally")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        print(#quot;try#quot;)
+    except Exception:
+        print(#quot;Exception#quot;)
+    except OtherException as e:
+        print(#quot;OtherException#quot;)
+    else:
+        print(#quot;else#quot;)
+    finally:
+        print(#quot;finally#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 1
+### Source
+```python
+def func():
+    try:
+        print("try")
+    except:
+        print("Exception")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        print(#quot;try#quot;)
+    except:
+        print(#quot;Exception#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 2
+### Source
+```python
+def func():
+    try:
+        print("try")
+    except:
+        print("Exception")
+    except OtherException as e:
+        print("OtherException")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        print(#quot;try#quot;)
+    except:
+        print(#quot;Exception#quot;)
+    except OtherException as e:
+        print(#quot;OtherException#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 3
+### Source
+```python
+def func():
+    try:
+        print("try")
+    except Exception:
+        print("Exception")
+    except OtherException as e:
+        print("OtherException")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        print(#quot;try#quot;)
+    except Exception:
+        print(#quot;Exception#quot;)
+    except OtherException as e:
+        print(#quot;OtherException#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 4
+### Source
+```python
+def func():
+    try:
+        print("try")
+    except Exception:
+        print("Exception")
+    except OtherException as e:
+        print("OtherException")
+    else:
+        print("else")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        print(#quot;try#quot;)
+    except Exception:
+        print(#quot;Exception#quot;)
+    except OtherException as e:
+        print(#quot;OtherException#quot;)
+    else:
+        print(#quot;else#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 5
+### Source
+```python
+def func():
+    try:
+        print("try")
+    finally:
+        print("finally")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        print(#quot;try#quot;)
+    finally:
+        print(#quot;finally#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 6
+### Source
+```python
+def func():
+    try:
+        return 0
+    except:
+        return 1
+    finally:
+        return 2
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        return 0
+    except:
+        return 1
+    finally:
+        return 2"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 7
+### Source
+```python
+def func():
+    try:
+        raise Exception()
+    except:
+        print("reached")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        raise Exception()
+    except:
+        print(#quot;reached#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 8
+### Source
+```python
+def func():
+    try:
+        assert False
+        print("unreachable")
+    except:
+        print("reached")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        assert False
+        print(#quot;unreachable#quot;)
+    except:
+        print(#quot;reached#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 9
+### Source
+```python
+def func():
+    try:
+        raise Exception()
+    finally:
+        print('reached')
+        return 2
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        raise Exception()
+    finally:
+        print('reached')
+        return 2"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 10
+### Source
+```python
+def func():
+    try:
+        assert False
+        print("unreachable")
+    finally:
+        print("reached")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        assert False
+        print(#quot;unreachable#quot;)
+    finally:
+        print(#quot;reached#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 11
+### Source
+```python
+def func():
+    try:
+        if catalog is not None:
+            try:
+                x = 0
+            except PySparkParseException:
+                x = 1
+        try:
+            x = 2
+        except PySparkParseException:
+            x = 3
+        x = 8
+    finally:
+        if catalog is not None:
+            try:
+                x = 4
+            except PySparkParseException:
+                x = 5
+        try:
+            x = 6
+        except PySparkParseException:
+            x = 7
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        if catalog is not None:
+            try:
+                x = 0
+            except PySparkParseException:
+                x = 1
+        try:
+            x = 2
+        except PySparkParseException:
+            x = 3
+        x = 8
+    finally:
+        if catalog is not None:
+            try:
+                x = 4
+            except PySparkParseException:
+                x = 5
+        try:
+            x = 6
+        except PySparkParseException:
+            x = 7"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 12
+### Source
+```python
+def func():
+    try:
+        assert False
+    except ex:
+        raise ex
+
+    finally:
+        raise Exception("other")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["try:
+        assert False
+    except ex:
+        raise ex
+
+    finally:
+        raise Exception(#quot;other#quot;)"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 13
+### Source
+```python
+def func():
+ for i in():
+    try:
+        try:
+         while r:
+          if t:break
+        finally:()
+        return
+    except:l
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["EMPTY"]
+	node1((("EXIT")))
+	node2["EMPTY"]
+	node3["try:
+        try:
+         while r:
+          if t:break
+        finally:()
+        return
+    except:l"]
+	node0-->|"for i in ()"|node3
+	node0==>node1
+	node3-->node2
+```
