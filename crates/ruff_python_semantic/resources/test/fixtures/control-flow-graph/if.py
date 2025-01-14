@@ -3,26 +3,22 @@ def func():
         return 0
     return 1
 
-
 def func():
     if True:
         return 1
     return 0
 
-
 def func():
     if False:
         return 0
     else:
         return 1
 
-
 def func():
     if True:
         return 1
     else:
         return 0
-
 
 def func():
     if False:
@@ -31,14 +27,12 @@ def func():
         return 1
     return "unreachable"
 
-
 def func():
     if True:
         return 1
     else:
         return 0
     return "unreachable"
-
 
 def func():
     if True:
@@ -49,16 +43,13 @@ def func():
         return 3
     return "unreachable2"
 
-
 def func():
     if False:
         return 0
 
-
 def func():
     if True:
         return 1
-
 
 def func():
     if True:
@@ -68,7 +59,6 @@ def func():
     else:
         return 0
 
-
 def func():
     if False:
         return 1
@@ -76,7 +66,6 @@ def func():
         return 2
     else:
         return 0
-
 
 def func():
     if True:
@@ -93,14 +82,12 @@ def func():
         return 5
     return 6
 
-
 def func():
     if False:
         return "unreached"
     elif False:
         return "also unreached"
     return "reached"
-
 
 # Test case found in the Bokeh repository that trigger a false positive.
 def func(self, obj: BytesRep) -> bytes:
@@ -120,7 +107,6 @@ def func(self, obj: BytesRep) -> bytes:
 
     return buffer.data
 
-
 def func(x):
     if x == 1:
         return 1
@@ -134,3 +120,11 @@ def func(x):
         return 5
     elif x == 6:
         return 6
+
+def func():
+    if x:
+        return
+    else:
+        assert x
+
+    print('pop')
