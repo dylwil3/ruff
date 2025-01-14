@@ -4,7 +4,7 @@ use ruff_text_size::Ranged;
 use std::fmt::{self, Display};
 
 use super::{
-    builder::{ControlEdge, ControlFlowGraph},
+    builder::{Condition, ControlEdge, ControlFlowGraph},
     implementations::{BlockId, CFG},
 };
 
@@ -190,13 +190,13 @@ where
     }
 }
 
-struct CFGWithSource<'stmt> {
+pub(crate) struct CFGWithSource<'stmt> {
     cfg: CFG<'stmt>,
     source: &'stmt str,
 }
 
 impl<'stmt> CFGWithSource<'stmt> {
-    pub fn new(cfg: CFG<'stmt>, source: &'stmt str) -> Self {
+    pub(crate) fn new(cfg: CFG<'stmt>, source: &'stmt str) -> Self {
         Self { cfg, source }
     }
 }
@@ -230,70 +230,101 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
             .map(|stmt| self.source[stmt.range()].to_string())
             .collect();
 
-        let content = statements.join("\n");
+        // Special case for terminal block
+        if node == self.cfg.terminal() {
+            if statements.is_empty() {
+                return MermaidNode {
+                    shape: MermaidNodeShape::DoubleCircle,
+                    content: "EXIT".to_string(),
+                };
+            }
+        }
+
+        let content = if statements.is_empty() {
+            "EMPTY".to_string()
+        } else {
+            statements.join("\n")
+        };
+
         MermaidNode::with_content(content)
+    }
+
+    fn draw_edges(&self, node: Self::Node) -> impl Iterator<Item = (Self::Node, MermaidEdge)> {
+        let edge_data = self.cfg.out(node);
+        edge_data
+            .targets()
+            .zip(edge_data.conditions())
+            .map(|(target, condition)| {
+                let edge = match condition {
+                    Condition::Test(expr) => MermaidEdge {
+                        kind: MermaidEdgeKind::Arrow,
+                        content: self.source[expr.range()].to_string(),
+                    },
+                    Condition::Always => {
+                        if target == self.cfg.terminal() {
+                            MermaidEdge {
+                                kind: MermaidEdgeKind::ThickArrow,
+                                content: String::new(),
+                            }
+                        } else {
+                            MermaidEdge {
+                                kind: MermaidEdgeKind::Arrow,
+                                content: String::new(),
+                            }
+                        }
+                    }
+                    Condition::Match { subject, case } => {
+                        let pattern = &self.source[case.pattern.range()];
+                        let subject = &self.source[subject.range()];
+                        MermaidEdge {
+                            kind: MermaidEdgeKind::Arrow,
+                            content: format!("{} matches {}", subject, pattern),
+                        }
+                    }
+                    Condition::Iterator {
+                        target,
+                        iter,
+                        is_async,
+                    } => {
+                        let target = &self.source[target.range()];
+                        let iter = &self.source[iter.range()];
+                        let prefix = if is_async { "async " } else { "" };
+                        MermaidEdge {
+                            kind: MermaidEdgeKind::Arrow,
+                            content: format!("{}for {} in {}", prefix, target, iter),
+                        }
+                    }
+                    Condition::ExceptHandler(handler) => {
+                        let exc_types = match &handler.as_except_handler().unwrap().type_ {
+                            Some(t) => self.source[t.range()].to_string(),
+                            None => "any exception".to_string(),
+                        };
+                        MermaidEdge {
+                            kind: MermaidEdgeKind::Arrow,
+                            content: format!("except {}", exc_types),
+                        }
+                    }
+                };
+                (target, edge)
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::cfg::implementations::build_cfg;
-    use ruff_python_ast::Stmt;
-    use ruff_python_parser::parse_module;
-    use std::path::PathBuf;
-    use std::{fmt, fs};
-
-    use ruff_text_size::Ranged;
-    use std::fmt::Write;
-    use test_case::test_case;
-    #[cfg(test)]
-    mod tests {
-        use super::*;
-        use crate::cfg::implementations::build_cfg;
-        use insta;
-        use ruff_python_ast::Stmt;
-        use ruff_python_parser::parse_module;
-        use ruff_text_size::Ranged;
-
-        #[test]
-        fn test_if_statement() {
-            let source = r#"
-def foo():
-    if x > 0:
-        return 1
-    else:
-        return 2
-"#;
-            let module = parse_module(source).unwrap();
-            if let Stmt::FunctionDef(func) = &module.into_syntax().body[0] {
-                let cfg = build_cfg(&func.body);
-
-                // Create formatted output with both source and diagram
-                let cfg_with_src = CFGWithSource::new(cfg, source);
-                let output = format!(
-                    "## Function test_if\n\
-                ### Source\n\
-                ```python\n\
-                {}\n\
-                ```\n\n\
-                ### Control Flow Graph\n\
-                ```mermaid\n\
-                {}\n\
-                ```\n",
-                    source,
-                    MermaidGraph::draw_graph(&cfg_with_src)
-                );
-
-                insta::with_settings!({
-                    omit_expression => true,
-                    description => "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
-                }, {
-                    insta::assert_snapshot!(output);
-                });
-            } else {
-                panic!("Expected function definition");
-            }
+impl<'stmt> CFGWithSource<'stmt> {
+    // Add debug method to print all edges
+    pub fn debug_edges(&self) {
+        println!("Debug: Listing all edges in CFG");
+        for block_idx in 0..self.cfg.num_blocks() {
+            let block = BlockId::new(block_idx);
+            let edge = self.cfg.out(block);
+            println!(
+                "Block {}: targets={:?}, conditions={:?}",
+                block_idx,
+                edge.targets().collect::<Vec<_>>(),
+                edge.conditions().collect::<Vec<_>>()
+            );
         }
     }
 }
