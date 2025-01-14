@@ -68,14 +68,16 @@ pub trait CFGBuilder<'stmt> {
     fn with_capacity(capacity: usize) -> Self;
 
     /// Returns the current basic block being constructed.
-    fn current(&mut self) -> Self::BasicBlock;
+    fn current(&self) -> Self::BasicBlock;
 
     /// Returns the current exit block for the scope being processed.
-    fn current_exit(&mut self) -> Self::BasicBlock;
+    fn current_exit(&self) -> Self::BasicBlock;
 
     /// Returns the terminal block of the CFG.
     /// This is the block that return statements will target.
-    fn terminal(&mut self) -> Self::BasicBlock;
+    fn terminal(&self) -> Self::BasicBlock;
+
+    fn at_terminal(&self) -> bool;
 
     /// Updates the current exit block.
     fn update_exit(&mut self, new_exit: Self::BasicBlock);
@@ -129,6 +131,10 @@ pub trait CFGBuilder<'stmt> {
                 | Stmt::Delete(_)
                 | Stmt::IpyEscapeCommand(_) => {
                     self.push_stmt(stmt);
+                    if stmts.peek().is_none() && !self.at_terminal() {
+                        let edge = Self::Edge::always(self.terminal());
+                        self.add_edge(edge);
+                    }
                 }
                 // Loops
                 Stmt::While(stmt_while) => {
@@ -379,8 +385,13 @@ pub trait CFGBuilder<'stmt> {
                     // Continue from next_block
                     self.move_to(next_block);
                 }
-                Stmt::Try(stmt_try) => todo!(),
-                Stmt::With(stmt_with) => todo!(),
+                // TODO
+                Stmt::Try(_) => {
+                    self.push_stmt(stmt);
+                }
+                Stmt::With(_) => {
+                    self.push_stmt(stmt);
+                }
 
                 // Jumps
                 Stmt::Return(_) => {
@@ -403,7 +414,12 @@ pub trait CFGBuilder<'stmt> {
                         self.move_to(next_block);
                     }
                 }
-                Stmt::Raise(_) => todo!(),
+
+                // TODO
+                Stmt::Raise(_) => {
+                    self.push_stmt(stmt);
+                }
+
                 Stmt::Continue(_) => {
                     self.push_stmt(stmt);
                     // We should only be processing a `continue` while
@@ -420,13 +436,18 @@ pub trait CFGBuilder<'stmt> {
                 }
                 // Assert is sort of a mixture of a switch and a jump,
                 // so handled as such
-                Stmt::Assert(stmt_assert) => todo!(),
+                // TODO
+                Stmt::Assert(_) => {
+                    self.push_stmt(stmt);
+                }
             }
         }
 
-        // End by connecting the current block to the terminal block.
-        let edge = Self::Edge::always(self.terminal());
-        self.add_edge(edge);
+        // End by connecting the current block to the terminal block if necessary.
+        if !self.at_terminal() {
+            let edge = Self::Edge::always(self.terminal());
+            self.add_edge(edge);
+        }
     }
 
     /// Returns the current loop exit block without removing it.
