@@ -9,10 +9,10 @@ pub fn build_cfg(stmts: &[Stmt]) -> CFG<'_> {
 }
 
 #[newtype_index]
-struct BlockId;
+pub struct BlockId;
 
 #[derive(Debug, Clone)]
-struct NextBlock<'stmt> {
+pub struct NextBlock<'stmt> {
     conditions: Vec<Condition<'stmt>>,
     targets: Vec<BlockId>,
 }
@@ -33,6 +33,10 @@ impl<'stmt> ControlEdge<'stmt> for NextBlock<'stmt> {
             conditions,
             targets,
         }
+    }
+
+    fn targets(&self) -> impl Iterator<Item = Self::Block> {
+        self.targets.iter().copied()
     }
 }
 
@@ -55,7 +59,7 @@ impl<'stmt> BlockData<'stmt> {
 }
 
 #[derive(Debug)]
-struct CFG<'stmt> {
+pub struct CFG<'stmt> {
     blocks: IndexVec<BlockId, BlockData<'stmt>>,
     initial: BlockId,
     terminal: BlockId,
@@ -87,7 +91,7 @@ impl<'stmt> ControlFlowGraph<'stmt> for CFG<'stmt> {
 }
 
 #[derive(Debug)]
-struct CFGConstructor<'stmt> {
+pub struct CFGConstructor<'stmt> {
     cfg: CFG<'stmt>,
     current: BlockId,
     current_exit: BlockId,
@@ -200,8 +204,7 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cfg::implementations::{CFGBuilder, CFG};
-    use crate::implementations::build_cfg;
+    use crate::cfg::implementations::build_cfg;
     use ruff_python_parser::parse_module;
 
     #[test]
