@@ -432,3 +432,30 @@ flowchart TD
 	node6==>node1
 	node7==>node1
 ```
+
+## Function 15
+### Source
+```python
+def func():
+    if x:
+        return
+    else:
+        assert x
+
+    print('pop')
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["EMPTY"]
+	node1((("EXIT")))
+	node2["print('pop')"]
+	node3["return"]
+	node4["assert x"]
+	node0-->|"x"|node3
+	node0-->node4
+	node2==>node1
+	node3==>node1
+	node4==>node1
+```

@@ -1,0 +1,33 @@
+---
+source: crates/ruff_python_semantic/src/cfg/mod.rs
+description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
+---
+## Function 0
+### Source
+```python
+def l():
+    while T:
+        try:
+            while ():
+                if 3:
+                    break
+        finally:
+            return
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["EMPTY"]
+	node1((("EXIT")))
+	node2["EMPTY"]
+	node3["try:
+            while ():
+                if 3:
+                    break
+        finally:
+            return"]
+	node0-->|"T"|node3
+	node0==>node1
+	node3-->node2
+```
