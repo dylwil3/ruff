@@ -1,3 +1,5 @@
+use std::fmt;
+
 use ruff_python_ast::{ExceptHandler, Expr, MatchCase, Stmt};
 
 pub trait ControlFlowGraph<'stmt> {
@@ -50,14 +52,16 @@ pub trait ControlEdge<'stmt> {
     /// Creates a multi-way branch based on conditions
     fn switch(conditions: Vec<(Condition<'stmt>, Self::Block)>) -> Self;
 
-    fn targets(&self) -> impl Iterator<Item = Self::Block>;
+    fn targets(&self) -> impl Iterator<Item = Self::Block> + ExactSizeIterator;
+
+    fn conditions(&self) -> impl Iterator<Item = Condition<'stmt>>;
 }
 
 /// A trait for building Control Flow Graphs (CFG).
 /// Implementations of this trait can construct CFGs by adding basic blocks,
 /// statements, and edges while maintaining loop context.
 pub trait CFGBuilder<'stmt> {
-    type BasicBlock: Copy;
+    type BasicBlock: fmt::Debug + Copy;
     type Edge: ControlEdge<'stmt, Block = Self::BasicBlock>;
     type Graph: ControlFlowGraph<'stmt, Block = Self::BasicBlock, Edge = Self::Edge>;
 
