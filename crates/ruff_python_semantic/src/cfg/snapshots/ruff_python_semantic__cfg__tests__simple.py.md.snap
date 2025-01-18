@@ -21,21 +21,6 @@ flowchart TD
 ### Source
 ```python
 def func():
-    pass
-```
-
-### Control Flow Graph
-```mermaid
-flowchart TD
-	node0["pass"]
-	node1((("EXIT")))
-	node0==>node1
-```
-
-## Function 2
-### Source
-```python
-def func():
     return
 ```
 
@@ -47,7 +32,7 @@ flowchart TD
 	node0==>node1
 ```
 
-## Function 3
+## Function 2
 ### Source
 ```python
 def func():
@@ -62,7 +47,7 @@ flowchart TD
 	node0==>node1
 ```
 
-## Function 4
+## Function 3
 ### Source
 ```python
 def func():
@@ -80,7 +65,7 @@ flowchart TD
 	node2==>node1
 ```
 
-## Function 5
+## Function 4
 ### Source
 ```python
 def func():
@@ -95,7 +80,7 @@ flowchart TD
 	node0==>node1
 ```
 
-## Function 6
+## Function 5
 ### Source
 ```python
 def func():
@@ -114,42 +99,25 @@ return i"]
 	node0==>node1
 ```
 
-## Function 7
+## Function 6
 ### Source
 ```python
 def func():
-    with x:
-        i = 0
-    i = 1
+    def inner():
+        x = 0
+        return x
+    x = 1
+    return x
 ```
 
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["with x:
-        i = 0
-i = 1"]
-	node1((("EXIT")))
-	node0==>node1
-```
-
-## Function 8
-### Source
-```python
-def func():
-    with x:
-        i = 0
-        return 1
-    i = 1
-```
-
-### Control Flow Graph
-```mermaid
-flowchart TD
-	node0["with x:
-        i = 0
-        return 1
-i = 1"]
+	node0["def inner():
+        x = 0
+        return x
+x = 1
+return x"]
 	node1((("EXIT")))
 	node0==>node1
 ```
