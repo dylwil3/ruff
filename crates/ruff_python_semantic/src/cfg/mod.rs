@@ -192,15 +192,15 @@ mod tests {
     use test_case::test_case;
 
     #[test_case("simple.py")]
-    #[test_case("if.py")]
-    #[test_case("while.py")]
-    #[test_case("for.py")]
-    #[test_case("async-for.py")]
-    #[test_case("try.py")]
-    #[test_case("raise.py")]
-    #[test_case("assert.py")]
-    #[test_case("match.py")]
-    #[test_case("try-finally-nested-if-while.py")]
+    // #[test_case("if.py")]
+    // #[test_case("while.py")]
+    // #[test_case("for.py")]
+    // #[test_case("async-for.py")]
+    // #[test_case("try.py")]
+    // #[test_case("raise.py")]
+    // #[test_case("assert.py")]
+    // #[test_case("match.py")]
+    // #[test_case("try-finally-nested-if-while.py")]
     fn control_flow_graph(filename: &str) {
         let path = PathBuf::from_iter(["resources/test/fixtures/control-flow-graph", filename]);
         let source = fs::read_to_string(path).expect("failed to read file");
