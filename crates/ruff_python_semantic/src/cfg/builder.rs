@@ -215,6 +215,8 @@ pub trait CFGBuilder<'stmt> {
 
                     // Create the loop guard block with the iterator
                     let guard = self.new_loop_guard(stmt);
+                    self.add_edge(Self::Edge::always(guard));
+                    self.move_to(guard);
 
                     // Create blocks for the loop body and else clause
                     let body = self.new_block();
@@ -235,7 +237,7 @@ pub trait CFGBuilder<'stmt> {
                                     },
                                     body,
                                 ),
-                                (Condition::Always, next_block),
+                                (Condition::Else, next_block),
                             ],
                             None,
                         )
@@ -252,7 +254,7 @@ pub trait CFGBuilder<'stmt> {
                                     body,
                                 ),
                                 // Normal loop exit goes to else clause
-                                (Condition::Always, else_block),
+                                (Condition::Else, else_block),
                             ],
                             Some(else_block),
                         )
@@ -271,10 +273,6 @@ pub trait CFGBuilder<'stmt> {
 
                     // Restore the old exit
                     self.update_exit(old_exit);
-
-                    // Add edge back to guard from wherever we ended up
-                    let edge = Self::Edge::always(guard);
-                    self.add_edge(edge);
 
                     // Process else clause with next_block as its exit
                     if let Some(else_block) = else_block {
