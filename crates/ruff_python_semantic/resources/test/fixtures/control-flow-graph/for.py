@@ -59,14 +59,6 @@ def func():
     else:
         pass
 
-def func():
-    for i in range(3):
-        if i == 2:
-            assert i is not None
-            break
-    else:
-        raise Exception()
-    x = 0
 
 def func():
     for i in range(13):

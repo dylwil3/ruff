@@ -182,6 +182,9 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     }
 
     fn add_edge(&mut self, edge: Self::Edge) {
+        // I don't think we should ever be overwriting an existing edge...
+        debug_assert!(self.cfg.blocks[self.current].out.targets.is_empty());
+        debug_assert!(self.cfg.blocks[self.current].out.conditions.is_empty());
         self.cfg.blocks[self.current].out = edge;
     }
 
