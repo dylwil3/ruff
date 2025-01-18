@@ -191,10 +191,11 @@ mod tests {
     use ruff_text_size::Ranged;
     use test_case::test_case;
 
+    // #[test_case("tmp.py")]
     #[test_case("simple.py")]
     #[test_case("if.py")]
     #[test_case("match.py")]
-    // #[test_case("while.py")]
+    #[test_case("while.py")]
     // #[test_case("for.py")]
     // #[test_case("async-for.py")]
     // #[test_case("try.py")]

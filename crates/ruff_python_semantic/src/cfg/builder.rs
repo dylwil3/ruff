@@ -151,8 +151,11 @@ pub trait CFGBuilder<'stmt> {
                     // Create a new block for any following statements
                     let next_block = self.next_or_exit(&mut stmts);
 
-                    // Create the loop guard block with the test
+                    // Create the loop guard block with the test,
+                    // and traverse unconditional edge to it.
                     let guard = self.new_loop_guard(stmt);
+                    self.add_edge(Self::Edge::always(guard));
+                    self.move_to(guard);
 
                     // Create a block for the loop body
                     let body = self.new_block();
@@ -166,7 +169,7 @@ pub trait CFGBuilder<'stmt> {
                         (
                             vec![
                                 (Condition::Test(&stmt_while.test), body),
-                                (Condition::Always, next_block),
+                                (Condition::Else, next_block),
                             ],
                             None,
                         )
@@ -176,7 +179,7 @@ pub trait CFGBuilder<'stmt> {
                         (
                             vec![
                                 (Condition::Test(&stmt_while.test), body),
-                                (Condition::Always, else_block),
+                                (Condition::Else, else_block),
                             ],
                             Some(else_block),
                         )
@@ -194,10 +197,6 @@ pub trait CFGBuilder<'stmt> {
 
                     // Restore the old exit
                     self.update_exit(old_exit);
-
-                    // Add edge back to guard from wherever we ended up
-                    let edge = Self::Edge::always(guard);
-                    self.add_edge(edge);
 
                     // Process else clause if it exists
                     if let Some(else_block) = else_block {
