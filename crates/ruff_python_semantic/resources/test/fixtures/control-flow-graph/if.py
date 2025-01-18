@@ -121,10 +121,22 @@ def func(x):
     elif x == 6:
         return 6
 
-def func():
+def func(x):
+    i = 0
     if x:
-        return
-    else:
-        assert x
+        i += 2
+    j = 1
+    if not x:
+        j -=3
+        return 17
+    k = i +j
+    return k
 
-    print('pop')
+def func(cond,cond2,cond3):
+    if cond:
+        return 0
+    else:
+        if cond3:
+            c()
+    return 1
+            

@@ -210,6 +210,10 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     fn at_exit(&self) -> bool {
         self.current() == self.current_exit()
     }
+
+    fn out(&self, block: Self::BasicBlock) -> &Self::Edge {
+        self.cfg.out(block)
+    }
 }
 
 #[cfg(test)]
