@@ -82,6 +82,7 @@ pub trait CFGBuilder<'stmt> {
     fn terminal(&self) -> Self::BasicBlock;
 
     fn at_terminal(&self) -> bool;
+    fn at_exit(&self) -> bool;
 
     /// Updates the current exit block.
     fn update_exit(&mut self, new_exit: Self::BasicBlock);
@@ -119,6 +120,8 @@ pub trait CFGBuilder<'stmt> {
         let mut stmts = stmts.into_iter().peekable();
 
         while let Some(stmt) = stmts.next() {
+            // Save current exit
+            let cache_exit = self.current_exit();
             match stmt {
                 Stmt::FunctionDef(_)
                 | Stmt::ClassDef(_)
@@ -135,10 +138,6 @@ pub trait CFGBuilder<'stmt> {
                 | Stmt::Delete(_)
                 | Stmt::IpyEscapeCommand(_) => {
                     self.push_stmt(stmt);
-                    if stmts.peek().is_none() && !self.at_terminal() {
-                        let edge = Self::Edge::always(self.terminal());
-                        self.add_edge(edge);
-                    }
                 }
                 // Loops
                 Stmt::While(stmt_while) => {
@@ -445,11 +444,13 @@ pub trait CFGBuilder<'stmt> {
                     self.push_stmt(stmt);
                 }
             }
+            // Restore exit
+            self.update_exit(cache_exit);
         }
 
-        // End by connecting the current block to the terminal block if necessary.
-        if !self.at_terminal() {
-            let edge = Self::Edge::always(self.terminal());
+        // End by connecting the current block to the exit if necessary.
+        if !self.at_exit() {
+            let edge = Self::Edge::always(self.current_exit());
             self.add_edge(edge);
         }
     }
