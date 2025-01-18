@@ -2,9 +2,6 @@ def func():
     pass
 
 def func():
-    pass
-
-def func():
     return
 
 def func():
@@ -23,12 +20,8 @@ def func():
     return i
 
 def func():
-    with x:
-        i = 0
-    i = 1
-
-def func():
-    with x:
-        i = 0
-        return 1
-    i = 1
+    def inner():
+        x = 0
+        return x
+    x = 1
+    return x
