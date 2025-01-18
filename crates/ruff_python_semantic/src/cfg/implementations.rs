@@ -207,6 +207,9 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     fn at_terminal(&self) -> bool {
         self.current() == self.terminal()
     }
+    fn at_exit(&self) -> bool {
+        self.current() == self.current_exit()
+    }
 }
 
 #[cfg(test)]
