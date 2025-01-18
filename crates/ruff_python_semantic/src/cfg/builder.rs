@@ -39,7 +39,9 @@ pub enum Condition<'stmt> {
     },
     /// An except handler for try/except blocks
     ExceptHandler(&'stmt ExceptHandler),
-    /// A fallback case (else/default/finally)
+    /// A fallback case (else/wildcard case/etc.)
+    Else,
+    /// Unconditional edge
     Always,
 }
 
@@ -313,7 +315,7 @@ pub trait CFGBuilder<'stmt> {
                             conditions.push((Condition::Test(test), *block));
                         } else {
                             // else clause (must be last)
-                            conditions.push((Condition::Always, *block));
+                            conditions.push((Condition::Else, *block));
                         }
                     }
 
@@ -321,7 +323,7 @@ pub trait CFGBuilder<'stmt> {
                     if clause_blocks.is_empty()
                         || stmt_if.elif_else_clauses.last().unwrap().test.is_some()
                     {
-                        conditions.push((Condition::Always, next_block));
+                        conditions.push((Condition::Else, next_block));
                     }
 
                     // Save the current exit for later
@@ -363,7 +365,11 @@ pub trait CFGBuilder<'stmt> {
                         .collect();
 
                     // Add conditions for each case
+                    let mut has_wildcard = false;
                     for (case, block) in &case_blocks {
+                        if case.pattern.is_wildcard() {
+                            has_wildcard = true
+                        }
                         conditions.push((
                             Condition::Match {
                                 subject: &stmt_match.subject,
@@ -371,6 +377,12 @@ pub trait CFGBuilder<'stmt> {
                             },
                             *block,
                         ));
+                    }
+
+                    // If the last condition was not a wildcard
+                    // add an "else" edge to the next block
+                    if !has_wildcard {
+                        conditions.push((Condition::Else, next_block))
                     }
 
                     // Save the current exit for later

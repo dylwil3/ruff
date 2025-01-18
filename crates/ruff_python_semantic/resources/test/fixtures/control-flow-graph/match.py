@@ -56,25 +56,6 @@ def func(status):
         case _, 2:
             return 0
 
-def func(point):
-    match point:
-        case (0, 0):
-            print("Origin")
-        case _:
-            raise ValueError("oops")
-
-def func(point):
-    match point:
-        case (0, 0):
-            print("Origin")
-        case (0, y):
-            print(f"Y={y}")
-        case (x, 0):
-            print(f"X={x}")
-        case (x, y):
-            print(f"X={x}, Y={y}")
-        case _:
-            raise ValueError("Not a point")
 
 def where_is(point):
     class Point:
@@ -130,10 +111,21 @@ def func():
         case Color.BLUE:
             print("I'm feeling the blues :(")
 
-
-def func(point):
-    match point:
-        case (0, 0):
-            print("Origin")
-        case foo:
-            raise ValueError("oops")
+def func():
+    x = 1
+    y = 2
+    match cond:
+        case 1:
+            x += 1
+        case 2:
+            x += 2
+        case 3:
+            return 3
+        case _:
+            match y:
+                case 4:
+                    x += y
+                case 5:
+                    return x+y
+    y += 4
+    return y - x

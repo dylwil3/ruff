@@ -304,6 +304,19 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
                             content: format!("except {}", exc_types),
                         }
                     }
+                    Condition::Else => {
+                        if target == self.cfg.terminal() {
+                            MermaidEdge {
+                                kind: MermaidEdgeKind::ThickArrow,
+                                content: "Else".to_string(),
+                            }
+                        } else {
+                            MermaidEdge {
+                                kind: MermaidEdgeKind::Arrow,
+                                content: "Else".to_string(),
+                            }
+                        }
+                    }
                 };
                 (target, edge)
             })
