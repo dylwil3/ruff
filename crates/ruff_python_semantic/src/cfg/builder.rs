@@ -97,15 +97,15 @@ pub trait CFGBuilder<'stmt> {
     fn new_block(&mut self) -> Self::BasicBlock;
 
     /// Creates a new block if there are more statements to process,
-    /// otherwise returns the terminal block
-    fn next_or_terminal<I>(&mut self, stmts: &mut std::iter::Peekable<I>) -> Self::BasicBlock
+    /// otherwise returns the current exit block
+    fn next_or_exit<I>(&mut self, stmts: &mut std::iter::Peekable<I>) -> Self::BasicBlock
     where
         I: Iterator<Item = &'stmt Stmt>,
     {
         if stmts.peek().is_some() {
             self.new_block()
         } else {
-            self.terminal()
+            self.current_exit()
         }
     }
 
@@ -114,6 +114,11 @@ pub trait CFGBuilder<'stmt> {
 
     /// Adds an outgoing edge from the current block to the target specified in the edge.
     fn add_edge(&mut self, edge: Self::Edge);
+
+    /// Get outgoing edge from block
+    /// (Note that an `Edge` actually represents multiple edges... confusingly
+    /// we should probably change the name.)
+    fn out(&self, block: Self::BasicBlock) -> &Self::Edge;
 
     /// Creates basic blocks and edges from a sequence of statements.
     fn process_stmts(&mut self, stmts: impl IntoIterator<Item = &'stmt Stmt>) {
@@ -142,7 +147,7 @@ pub trait CFGBuilder<'stmt> {
                 // Loops
                 Stmt::While(stmt_while) => {
                     // Create a new block for any following statements
-                    let next_block = self.next_or_terminal(&mut stmts);
+                    let next_block = self.next_or_exit(&mut stmts);
 
                     // Create the loop guard block with the test
                     let guard = self.new_loop_guard(stmt);
@@ -205,7 +210,7 @@ pub trait CFGBuilder<'stmt> {
                 }
                 Stmt::For(stmt_for) => {
                     // Create a new block for any following statements
-                    let next_block = self.next_or_terminal(&mut stmts);
+                    let next_block = self.next_or_exit(&mut stmts);
 
                     // Create the loop guard block with the iterator
                     let guard = self.new_loop_guard(stmt);
@@ -285,7 +290,7 @@ pub trait CFGBuilder<'stmt> {
                 // Switch statements
                 Stmt::If(stmt_if) => {
                     // Create a new block for any following statements
-                    let next_block = self.next_or_terminal(&mut stmts);
+                    let next_block = self.next_or_exit(&mut stmts);
 
                     // Create a vec of conditions and their target blocks
                     let mut conditions = Vec::new();
@@ -345,7 +350,7 @@ pub trait CFGBuilder<'stmt> {
                 }
                 Stmt::Match(stmt_match) => {
                     // Create a new block for any following statements
-                    let next_block = self.next_or_terminal(&mut stmts);
+                    let next_block = self.next_or_exit(&mut stmts);
 
                     // Create a vec of conditions and their target blocks
                     let mut conditions = Vec::new();
@@ -446,6 +451,10 @@ pub trait CFGBuilder<'stmt> {
             }
             // Restore exit
             self.update_exit(cache_exit);
+            // If we have an outgoing edge, move to exit
+            if self.out(self.current()).conditions().next().is_some() {
+                self.move_to(self.current_exit());
+            }
         }
 
         // End by connecting the current block to the exit if necessary.
