@@ -371,6 +371,9 @@ pub(crate) fn statement(stmt: &Stmt, checker: &mut Checker) {
             if checker.enabled(Rule::PytestParameterWithDefaultArgument) {
                 flake8_pytest_style::rules::parameter_with_default_argument(checker, function_def);
             }
+            if checker.enabled(Rule::NeverLoops) {
+                ruff::rules::never_loops(checker, body);
+            }
             if checker.enabled(Rule::Airflow3Removal) {
                 airflow::rules::airflow_3_removal_function_def(checker, function_def);
             }

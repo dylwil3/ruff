@@ -1013,6 +1013,7 @@ pub fn code_to_rule(linter: Linter, code: &str) -> Option<(RuleGroup, Rule)> {
         (Ruff, "058") => (RuleGroup::Preview, rules::ruff::rules::StarmapZip),
         (Ruff, "100") => (RuleGroup::Stable, rules::ruff::rules::UnusedNOQA),
         (Ruff, "101") => (RuleGroup::Stable, rules::ruff::rules::RedirectedNOQA),
+        (Ruff, "300") => (RuleGroup::Preview, rules::ruff::rules::NeverLoops),
 
         (Ruff, "200") => (RuleGroup::Stable, rules::ruff::rules::InvalidPyprojectToml),
         #[cfg(any(feature = "test-rules", test))]
