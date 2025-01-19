@@ -55,15 +55,8 @@ pub(crate) fn never_loops(checker: &mut Checker, body: &[Stmt]) {
         match stmt {
             Stmt::For(_) | Stmt::While(_) => {
                 let cfg = build_cfg(&body[i..i + 1]);
-                let loop_guard = cfg.out(cfg.initial()).targets().next().unwrap();
-                let loop_body = cfg.out(loop_guard).targets().next().unwrap();
-                if cfg
-                    .out(loop_body)
-                    .targets()
-                    .find(|tgt| tgt == &loop_guard)
-                    .is_none()
-                {
-                    dbg!(&cfg);
+                let loop_guard = cfg.outgoing(cfg.initial()).targets().next().unwrap();
+                if cfg.predecessors(loop_guard).count() == 1 {
                     checker
                         .diagnostics
                         .push(Diagnostic::new(NeverLoops, stmt.range()));
