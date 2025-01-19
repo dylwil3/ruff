@@ -1,0 +1,52 @@
+---
+source: crates/ruff_linter/src/rules/ruff/mod.rs
+---
+RUF300.py:2:5: RUF300 This loop executes at most once
+  |
+1 |   def f():
+2 | /     while cond:
+3 | |         break
+  | |_____________^ RUF300
+4 |
+5 |   def f():
+  |
+
+RUF300.py:6:5: RUF300 This loop executes at most once
+   |
+ 5 |   def f():
+ 6 | /     while cond:
+ 7 | |         if cond1:
+ 8 | |             return 1
+ 9 | |         elif cond2:
+10 | |             return 2
+11 | |         else:
+12 | |             return 3
+   | |____________________^ RUF300
+13 |
+14 |   def f():
+   |
+
+RUF300.py:15:5: RUF300 This loop executes at most once
+   |
+14 |   def f():
+15 | /     while cond:
+16 | |         return
+17 | |     else:
+18 | |         return 3
+   | |________________^ RUF300
+19 |
+20 |   def f():
+   |
+
+RUF300.py:21:5: RUF300 This loop executes at most once
+   |
+20 |   def f():
+21 | /     for i in itr:
+22 | |         if i>0:
+23 | |             break
+24 | |         else:
+25 | |             return
+   | |__________________^ RUF300
+26 |
+27 |   def f():
+   |
