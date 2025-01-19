@@ -45,7 +45,16 @@ impl<'stmt> ControlEdge<'stmt> for NextBlock<'stmt> {
 }
 
 #[derive(Debug, Default)]
+pub enum BlockKind {
+    #[default]
+    Generic,
+    LoopGuard,
+    Terminal,
+}
+
+#[derive(Debug, Default)]
 struct BlockData<'stmt> {
+    kind: BlockKind,
     stmts: Vec<&'stmt Stmt>,
     out: NextBlock<'stmt>,
     parents: Vec<BlockId>,
@@ -56,6 +65,12 @@ pub struct CFG<'stmt> {
     blocks: IndexVec<BlockId, BlockData<'stmt>>,
     initial: BlockId,
     terminal: BlockId,
+}
+
+impl<'stmt> CFG<'stmt> {
+    pub fn kind(&self, block: BlockId) -> &BlockKind {
+        &self.blocks[block].kind
+    }
 }
 
 impl<'stmt> ControlFlowGraph<'stmt> for CFG<'stmt> {
@@ -98,25 +113,6 @@ pub struct CFGConstructor<'stmt> {
     loop_exits: Vec<BlockId>,
 }
 
-impl<'stmt> CFGConstructor<'stmt> {
-    fn with_capacity(capacity: usize) -> Self {
-        let mut blocks = IndexVec::with_capacity(capacity);
-        let initial = blocks.push(BlockData::default());
-        let terminal = blocks.push(BlockData::default());
-
-        Self {
-            cfg: CFG {
-                blocks,
-                initial,
-                terminal,
-            },
-            current: initial,
-            current_exit: terminal,
-            loop_exits: Vec::new(),
-        }
-    }
-}
-
 impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     type BasicBlock = BlockId;
     type Edge = NextBlock<'stmt>;
@@ -129,7 +125,10 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     fn with_capacity(capacity: usize) -> Self {
         let mut blocks = IndexVec::with_capacity(capacity);
         let initial = blocks.push(BlockData::default());
-        let terminal = blocks.push(BlockData::default());
+        let terminal = blocks.push(BlockData {
+            kind: BlockKind::Terminal,
+            ..BlockData::default()
+        });
 
         Self {
             cfg: CFG {
@@ -174,7 +173,10 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     fn new_loop_guard(&mut self, _stmt: &'stmt Stmt) -> Self::BasicBlock {
         // For now, just create a new block - we might want to store the
         // stmt association later for analysis
-        self.new_block()
+        self.cfg.blocks.push(BlockData {
+            kind: BlockKind::LoopGuard,
+            ..BlockData::default()
+        })
     }
 
     fn add_edge(&mut self, edge: Self::Edge) {
