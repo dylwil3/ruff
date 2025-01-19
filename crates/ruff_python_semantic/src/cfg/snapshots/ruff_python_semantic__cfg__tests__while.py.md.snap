@@ -17,7 +17,7 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["return 1"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["return #quot;unreachable#quot;"]
 	node0-->node3
 	node2==>node1
@@ -41,7 +41,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["return #quot;unreachable#quot;"]
 	node4["return 1"]
 	node0-->node2
@@ -68,7 +68,7 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["return #quot;also unreachable#quot;"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["return #quot;unreachable#quot;"]
 	node5["return 1"]
 	node0-->node3
@@ -94,7 +94,7 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["return #quot;unreachable#quot;"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["return 1"]
 	node0-->node3
 	node2==>node1
@@ -118,7 +118,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["return 1"]
 	node4["return #quot;unreachable#quot;"]
 	node0-->node2
@@ -145,7 +145,7 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["return #quot;also unreachable#quot;"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["return 1"]
 	node5["return #quot;unreachable#quot;"]
 	node0-->node3
@@ -172,7 +172,7 @@ flowchart TD
 	node0["i = 0"]
 	node1((("EXIT")))
 	node2["return i"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["i += 1"]
 	node0-->node3
 	node2==>node1
@@ -197,7 +197,7 @@ flowchart TD
 	node0["i = 0"]
 	node1((("EXIT")))
 	node2["return i"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["i += 1"]
 	node0-->node3
 	node2==>node1
@@ -221,7 +221,7 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["return 1"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["pass"]
 	node0-->node3
 	node2==>node1
@@ -248,8 +248,8 @@ flowchart TD
 	node0["i = 0"]
 	node1((("EXIT")))
 	node2["return i"]
-	node3["EMPTY"]
-	node4["EMPTY"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
 	node5["i += 1"]
 	node6["print(#quot;ok#quot;)"]
 	node0-->node3
@@ -280,8 +280,8 @@ flowchart TD
 	node0["i = 0"]
 	node1((("EXIT")))
 	node2["return i"]
-	node3["EMPTY"]
-	node4["EMPTY"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
 	node5["i += 1"]
 	node6["print(#quot;ok#quot;)"]
 	node0-->node3
@@ -310,8 +310,8 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["return 0"]
-	node3["EMPTY"]
-	node4["EMPTY"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
 	node5["return 1"]
 	node0-->node3
 	node2==>node1
@@ -335,7 +335,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["continue"]
 	node0-->node2
 	node2-->|"True"|node3
@@ -356,7 +356,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["continue"]
 	node0-->node2
 	node2-->|"False"|node3
@@ -377,7 +377,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["break"]
 	node0-->node2
 	node2-->|"True"|node3
@@ -398,7 +398,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["break"]
 	node0-->node2
 	node2-->|"False"|node3
@@ -420,8 +420,8 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
-	node3["EMPTY"]
+	node2["LOOP GUARD"]
+	node3["SWITCH"]
 	node4["continue"]
 	node0-->node2
 	node2-->|"True"|node3
@@ -445,8 +445,8 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
-	node3["EMPTY"]
+	node2["LOOP GUARD"]
+	node3["SWITCH"]
 	node4["break"]
 	node0-->node2
 	node2-->|"True"|node3
@@ -474,7 +474,7 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["x = 3"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["x = 0
 x = 1
 break"]
@@ -505,7 +505,7 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["x = 3"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["x = 0
 x = 1
 continue"]
@@ -536,7 +536,7 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["x = 3"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["x = 0
 x = 1
 return"]
