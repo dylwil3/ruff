@@ -5,7 +5,7 @@ use std::fmt::{self, Display};
 
 use super::{
     builder::{Condition, ControlEdge, ControlFlowGraph},
-    implementations::{BlockId, CFG},
+    implementations::{BlockId, BlockKind, CFG},
 };
 
 pub trait DirectedGraph<'a> {
@@ -223,27 +223,35 @@ impl<'stmt> Successors<'stmt> for CFGWithSource<'stmt> {
 
 impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
     fn draw_node(&self, node: Self::Node) -> MermaidNode {
-        let statements: Vec<String> = self
+        let mut statements: Vec<String> = self
             .cfg
             .stmts(node)
             .into_iter()
             .map(|stmt| self.source[stmt.range()].to_string())
             .collect();
-
-        // Special case for terminal block
-        if node == self.cfg.terminal() {
-            if statements.is_empty() {
-                return MermaidNode {
-                    shape: MermaidNodeShape::DoubleCircle,
-                    content: "EXIT".to_string(),
-                };
+        let content = match self.cfg.kind(node) {
+            BlockKind::Generic => {
+                if self
+                    .cfg
+                    .outgoing(node)
+                    .conditions()
+                    .any(|cond| matches!(cond, Condition::Test(_)))
+                {
+                    statements.push("SWITCH".to_string());
+                }
+                if statements.is_empty() {
+                    "EMPTY".to_string()
+                } else {
+                    statements.join("\n")
+                }
             }
-        }
-
-        let content = if statements.is_empty() {
-            "EMPTY".to_string()
-        } else {
-            statements.join("\n")
+            BlockKind::LoopGuard => "LOOP GUARD".to_string(),
+            BlockKind::Terminal => {
+                return MermaidNode {
+                    content: "EXIT".to_string(),
+                    shape: MermaidNodeShape::DoubleCircle,
+                }
+            }
         };
 
         MermaidNode::with_content(content)
