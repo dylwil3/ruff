@@ -18,7 +18,12 @@ pub trait ControlFlowGraph<'stmt> {
     /// Get outgoing edge from block
     /// (Note that an `Edge` actually represents multiple edges... confusingly
     /// we should probably change the name.)
-    fn out(&self, block: Self::Block) -> &Self::Edge;
+    fn outgoing(&self, block: Self::Block) -> &Self::Edge;
+
+    fn predecessors(
+        &self,
+        block: Self::Block,
+    ) -> impl IntoIterator<Item = Self::Block> + ExactSizeIterator;
 }
 
 /// Represents a condition to be tested in a multi-way branch

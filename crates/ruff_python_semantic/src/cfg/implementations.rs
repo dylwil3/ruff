@@ -11,7 +11,7 @@ pub fn build_cfg(stmts: &[Stmt]) -> CFG<'_> {
 #[newtype_index]
 pub struct BlockId;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct NextBlock<'stmt> {
     conditions: Vec<Condition<'stmt>>,
     targets: Vec<BlockId>,
@@ -44,22 +44,11 @@ impl<'stmt> ControlEdge<'stmt> for NextBlock<'stmt> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct BlockData<'stmt> {
     stmts: Vec<&'stmt Stmt>,
     out: NextBlock<'stmt>,
-}
-
-impl<'stmt> BlockData<'stmt> {
-    fn new() -> Self {
-        Self {
-            stmts: Vec::new(),
-            out: NextBlock {
-                conditions: Vec::new(),
-                targets: Vec::new(),
-            },
-        }
-    }
+    parents: Vec<BlockId>,
 }
 
 #[derive(Debug)]
@@ -89,8 +78,15 @@ impl<'stmt> ControlFlowGraph<'stmt> for CFG<'stmt> {
         self.blocks[block].stmts.clone()
     }
 
-    fn out(&self, block: Self::Block) -> &Self::Edge {
+    fn outgoing(&self, block: Self::Block) -> &Self::Edge {
         &self.blocks[block].out
+    }
+
+    fn predecessors(
+        &self,
+        block: Self::Block,
+    ) -> impl IntoIterator<Item = Self::Block> + ExactSizeIterator {
+        self.blocks[block].parents.iter().copied()
     }
 }
 
@@ -105,8 +101,8 @@ pub struct CFGConstructor<'stmt> {
 impl<'stmt> CFGConstructor<'stmt> {
     fn with_capacity(capacity: usize) -> Self {
         let mut blocks = IndexVec::with_capacity(capacity);
-        let initial = blocks.push(BlockData::new());
-        let terminal = blocks.push(BlockData::new());
+        let initial = blocks.push(BlockData::default());
+        let terminal = blocks.push(BlockData::default());
 
         Self {
             cfg: CFG {
@@ -132,8 +128,8 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
 
     fn with_capacity(capacity: usize) -> Self {
         let mut blocks = IndexVec::with_capacity(capacity);
-        let initial = blocks.push(BlockData::new());
-        let terminal = blocks.push(BlockData::new());
+        let initial = blocks.push(BlockData::default());
+        let terminal = blocks.push(BlockData::default());
 
         Self {
             cfg: CFG {
@@ -172,7 +168,7 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     }
 
     fn new_block(&mut self) -> Self::BasicBlock {
-        self.cfg.blocks.push(BlockData::new())
+        self.cfg.blocks.push(BlockData::default())
     }
 
     fn new_loop_guard(&mut self, _stmt: &'stmt Stmt) -> Self::BasicBlock {
@@ -185,6 +181,9 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
         // I don't think we should ever be overwriting an existing edge...
         debug_assert!(self.cfg.blocks[self.current].out.targets.is_empty());
         debug_assert!(self.cfg.blocks[self.current].out.conditions.is_empty());
+        for &target in &edge.targets {
+            self.cfg.blocks[target].parents.push(self.current)
+        }
         self.cfg.blocks[self.current].out = edge;
     }
 
@@ -215,7 +214,7 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     }
 
     fn out(&self, block: Self::BasicBlock) -> &Self::Edge {
-        self.cfg.out(block)
+        self.cfg.outgoing(block)
     }
 }
 
@@ -241,7 +240,7 @@ mod tests {
             assert_eq!(stmts.len(), 1);
             assert!(matches!(stmts[0], Stmt::Pass(_)));
 
-            let out = cfg.out(initial);
+            let out = cfg.outgoing(initial);
             assert_eq!(out.targets.len(), 1);
             assert_eq!(out.targets[0], cfg.terminal());
         } else {
@@ -266,7 +265,7 @@ mod tests {
             assert!(matches!(stmts[0], Stmt::Return(_)));
 
             // Return should go straight to terminal
-            let out = cfg.out(initial);
+            let out = cfg.outgoing(initial);
             assert_eq!(out.targets.len(), 1);
             assert_eq!(out.targets[0], cfg.terminal());
         } else {
@@ -291,7 +290,7 @@ def foo():
             assert_eq!(cfg.num_blocks(), 4);
 
             let initial = cfg.initial();
-            let initial_out = cfg.out(initial);
+            let initial_out = cfg.outgoing(initial);
 
             // Initial block should branch to two blocks
             assert_eq!(initial_out.conditions.len(), 2);
@@ -304,7 +303,7 @@ def foo():
                 assert!(matches!(stmts[0], Stmt::Return(_)));
 
                 // Each should go to terminal
-                let out = cfg.out(target);
+                let out = cfg.outgoing(target);
                 assert_eq!(out.targets.len(), 1);
                 assert_eq!(out.targets[0], cfg.terminal());
             }

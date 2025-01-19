@@ -186,7 +186,7 @@ where
     T::Block: Idx,
 {
     fn successors(&self, node: Self::Node) -> Vec<Self::Node> {
-        self.out(node).targets().collect()
+        self.outgoing(node).targets().collect()
     }
 }
 
@@ -250,7 +250,7 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
     }
 
     fn draw_edges(&self, node: Self::Node) -> impl Iterator<Item = (Self::Node, MermaidEdge)> {
-        let edge_data = self.cfg.out(node);
+        let edge_data = self.cfg.outgoing(node);
         edge_data
             .targets()
             .zip(edge_data.conditions())
@@ -331,7 +331,7 @@ impl<'stmt> CFGWithSource<'stmt> {
         println!("Debug: Listing all edges in CFG");
         for block_idx in 0..self.cfg.num_blocks() {
             let block = BlockId::new(block_idx);
-            let edge = self.cfg.out(block);
+            let edge = self.cfg.outgoing(block);
             println!(
                 "Block {}: targets={:?}, conditions={:?}",
                 block_idx,
