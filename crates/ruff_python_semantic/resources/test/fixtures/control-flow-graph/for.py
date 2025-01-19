@@ -100,3 +100,12 @@ def func():
             continue
 
     print('hello')
+
+def f():
+    for i in itr:
+        if i>0:
+            break
+        else:
+            continue
+    return 3
+

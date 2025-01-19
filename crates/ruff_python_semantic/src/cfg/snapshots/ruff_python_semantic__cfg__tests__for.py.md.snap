@@ -412,3 +412,35 @@ flowchart TD
 	node8-->node5
 	node9-->node3
 ```
+
+## Function 14
+### Source
+```python
+def f():
+    for i in itr:
+        if i>0:
+            break
+        else:
+            continue
+    return 3
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["EMPTY"]
+	node1((("EXIT")))
+	node2["return 3"]
+	node3["EMPTY"]
+	node4["EMPTY"]
+	node5["break"]
+	node6["continue"]
+	node0-->node3
+	node2==>node1
+	node3-->|"for i in itr"|node4
+	node3-->|"Else"|node2
+	node4-->|"i>0"|node5
+	node4-->|"Else"|node6
+	node5-->node2
+	node6-->node3
+```

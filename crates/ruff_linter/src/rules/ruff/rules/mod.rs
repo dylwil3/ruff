@@ -112,3 +112,6 @@ pub(crate) enum Context {
     Docstring,
     Comment,
 }
+pub(crate) use never_loops::*;
+
+mod never_loops;
