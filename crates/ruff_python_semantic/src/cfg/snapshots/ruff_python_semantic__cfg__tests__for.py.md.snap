@@ -15,7 +15,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["print(i)"]
 	node0-->node2
 	node2-->|"for i in range(5)"|node3
@@ -38,7 +38,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["print(i)"]
 	node4["return 0"]
 	node0-->node2
@@ -64,8 +64,8 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["return 0"]
-	node3["EMPTY"]
-	node4["EMPTY"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
 	node5["return 1"]
 	node0-->node3
 	node2==>node1
@@ -94,8 +94,8 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["return 2"]
-	node3["EMPTY"]
-	node4["EMPTY"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
 	node5["return 0"]
 	node6["return 1"]
 	node0-->node3
@@ -121,7 +121,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["continue"]
 	node0-->node2
 	node2-->|"for i in range(12)"|node3
@@ -143,8 +143,8 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
-	node3["EMPTY"]
+	node2["LOOP GUARD"]
+	node3["SWITCH"]
 	node4["continue"]
 	node0-->node2
 	node2-->|"for i in range(1110)"|node3
@@ -167,7 +167,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["break"]
 	node0-->node2
 	node2-->|"for i in range(13)"|node3
@@ -189,8 +189,8 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
-	node3["EMPTY"]
+	node2["LOOP GUARD"]
+	node3["SWITCH"]
 	node4["break"]
 	node0-->node2
 	node2-->|"for i in range(1110)"|node3
@@ -215,7 +215,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["pass"]
 	node4["return 1"]
 	node0-->node2
@@ -242,7 +242,7 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["x = 1"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["pass"]
 	node5["return 1"]
 	node0-->node3
@@ -268,7 +268,7 @@ def func():
 flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["LOOP GUARD"]
 	node3["pass"]
 	node4["pass"]
 	node0-->node2
@@ -301,11 +301,13 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["print('hello')"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["EMPTY"]
-	node5["x = 3"]
-	node6["EMPTY"]
-	node7["x = 2"]
+	node5["x = 3
+SWITCH"]
+	node6["LOOP GUARD"]
+	node7["x = 2
+SWITCH"]
 	node8["break"]
 	node9["break"]
 	node0-->node3
@@ -346,11 +348,13 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["print('hello')"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["EMPTY"]
-	node5["x = 3"]
-	node6["EMPTY"]
-	node7["x = 2"]
+	node5["x = 3
+SWITCH"]
+	node6["LOOP GUARD"]
+	node7["x = 2
+SWITCH"]
 	node8["continue"]
 	node9["break"]
 	node0-->node3
@@ -391,11 +395,13 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["print('hello')"]
-	node3["EMPTY"]
+	node3["LOOP GUARD"]
 	node4["EMPTY"]
-	node5["x = 3"]
-	node6["EMPTY"]
-	node7["x = 2"]
+	node5["x = 3
+SWITCH"]
+	node6["LOOP GUARD"]
+	node7["x = 2
+SWITCH"]
 	node8["break"]
 	node9["continue"]
 	node0-->node3
@@ -431,8 +437,8 @@ flowchart TD
 	node0["EMPTY"]
 	node1((("EXIT")))
 	node2["return 3"]
-	node3["EMPTY"]
-	node4["EMPTY"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
 	node5["break"]
 	node6["continue"]
 	node0-->node3

@@ -14,7 +14,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node3["return 0"]
@@ -36,7 +36,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 0"]
 	node3["return 1"]
@@ -59,7 +59,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 0"]
 	node3["return 1"]
@@ -82,7 +82,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node3["return 0"]
@@ -106,7 +106,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return #quot;unreachable#quot;"]
 	node3["return 0"]
@@ -132,7 +132,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return #quot;unreachable#quot;"]
 	node3["return 1"]
@@ -160,10 +160,10 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return #quot;unreachable2#quot;"]
-	node3["EMPTY"]
+	node3["SWITCH"]
 	node4["return 3"]
 	node5["return 2"]
 	node6["return 1"]
@@ -188,7 +188,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 0"]
 	node0-->|"False"|node2
@@ -207,7 +207,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node0-->|"True"|node2
@@ -230,7 +230,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node3["return 2"]
@@ -258,7 +258,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node3["return 2"]
@@ -293,10 +293,10 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 6"]
-	node3["EMPTY"]
+	node3["SWITCH"]
 	node4["return 4"]
 	node5["return 5"]
 	node6["return 3"]
@@ -332,7 +332,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return #quot;reached#quot;"]
 	node3["return #quot;unreached#quot;"]
@@ -369,12 +369,14 @@ def func(self, obj: BytesRep) -> bytes:
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["data = obj[#quot;data#quot;]"]
+	node0["data = obj[#quot;data#quot;]
+SWITCH"]
 	node1((("EXIT")))
 	node2["return buffer.data"]
 	node3["return base64.b64decode(data)"]
 	node4["buffer = data"]
-	node5["id = data[#quot;id#quot;]"]
+	node5["id = data[#quot;id#quot;]
+SWITCH"]
 	node6["buffer = self._buffers[id]"]
 	node7["self.error(f#quot;can't resolve buffer '{id}'#quot;)"]
 	node0-->|"isinstance(data, str)"|node3
@@ -410,7 +412,7 @@ def func(x):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node3["return 2"]
@@ -451,9 +453,11 @@ def func(x):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["i = 0"]
+	node0["i = 0
+SWITCH"]
 	node1((("EXIT")))
-	node2["j = 1"]
+	node2["j = 1
+SWITCH"]
 	node3["i += 2"]
 	node4["k = i +j
 return k"]
@@ -483,11 +487,11 @@ def func(cond,cond2,cond3):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["SWITCH"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node3["return 0"]
-	node4["EMPTY"]
+	node4["SWITCH"]
 	node5["c()"]
 	node0-->|"cond"|node3
 	node0-->|"Else"|node4
