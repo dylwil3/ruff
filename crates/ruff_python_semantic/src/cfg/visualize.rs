@@ -252,6 +252,7 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
                     shape: MermaidNodeShape::DoubleCircle,
                 }
             }
+            BlockKind::ExceptionDispatch => "EXCEPTION DISPATCH".to_string(),
         };
 
         MermaidNode::with_content(content)
@@ -303,7 +304,7 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
                         }
                     }
                     Condition::ExceptHandler(handler) => {
-                        let exc_types = match &handler.as_except_handler().unwrap().type_ {
+                        let exc_types = match &handler.type_ {
                             Some(t) => self.source[t.range()].to_string(),
                             None => "any exception".to_string(),
                         };
@@ -322,6 +323,19 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
                             MermaidEdge {
                                 kind: MermaidEdgeKind::Arrow,
                                 content: "Else".to_string(),
+                            }
+                        }
+                    }
+                    Condition::UncaughtException => {
+                        if target == self.cfg.terminal() {
+                            MermaidEdge {
+                                kind: MermaidEdgeKind::ThickArrow,
+                                content: "Uncaught Exception".to_string(),
+                            }
+                        } else {
+                            MermaidEdge {
+                                kind: MermaidEdgeKind::Arrow,
+                                content: "Uncaught Exception".to_string(),
                             }
                         }
                     }

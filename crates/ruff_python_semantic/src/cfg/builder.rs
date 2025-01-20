@@ -1,6 +1,6 @@
 use std::fmt;
 
-use ruff_python_ast::{ExceptHandler, Expr, MatchCase, Stmt};
+use ruff_python_ast::{ExceptHandler, ExceptHandlerExceptHandler, Expr, MatchCase, Stmt};
 
 pub trait ControlFlowGraph<'stmt> {
     type Block: Copy;
@@ -43,7 +43,9 @@ pub enum Condition<'stmt> {
         is_async: bool,
     },
     /// An except handler for try/except blocks
-    ExceptHandler(&'stmt ExceptHandler),
+    ExceptHandler(&'stmt ExceptHandlerExceptHandler),
+    /// An uncaught exception
+    UncaughtException,
     /// A fallback case (else/wildcard case/etc.)
     Else,
     /// Unconditional edge
@@ -118,6 +120,10 @@ pub trait CFGBuilder<'stmt> {
 
     /// Creates a new block to handle entering and exiting a loop body.
     fn new_loop_guard(&mut self, stmt: &'stmt Stmt) -> Self::BasicBlock;
+
+    /// Creates a new block to handle dispatching control flow at the end
+    /// of a `try` block.
+    fn new_exception_dispatch(&mut self) -> Self::BasicBlock;
 
     /// Adds an outgoing edge from the current block to the target specified in the edge.
     fn add_edge(&mut self, edge: Self::Edge);
@@ -407,9 +413,121 @@ pub trait CFGBuilder<'stmt> {
                     // Continue from next_block
                     self.move_to(next_block);
                 }
-                // TODO
-                Stmt::Try(_) => {
-                    self.push_stmt(stmt);
+                Stmt::Try(stmt_try) => {
+                    // This is almost identical to a match statement,
+                    // but with some subtleties regarding the possible
+                    // `finally` block, and the need to update
+                    // the context stack.
+
+                    // Save the current exit for later
+                    let old_exit = self.current_exit();
+
+                    // First we move to a new block for the try
+                    // statement: even though execution unconditionally
+                    // flows into this block, we will often need
+                    // to run dataflow analyses differently within
+                    // a try block.
+                    let try_block = self.new_block();
+                    self.add_edge(Self::Edge::always(try_block));
+                    self.move_to(try_block);
+
+                    // Next, we add a block, similar to the loop guard,
+                    // for handling control flow as we exit the `try`-block
+                    let dispatch_block = self.new_exception_dispatch();
+                    self.update_exit(dispatch_block);
+                    self.process_stmts(&stmt_try.body);
+                    self.move_to(dispatch_block);
+                    self.update_exit(old_exit);
+
+                    // Create a new block for any following statements
+                    let next_block = self.next_or_exit(&mut stmts);
+
+                    // If there is a `finally` block, it will sometimes
+                    // replace the role of the terminal block and,
+                    // at other times, replace the role of the `next_block`
+                    let maybe_finally_block = if stmt_try.finalbody.is_empty() {
+                        None
+                    } else {
+                        Some(self.new_block())
+                    };
+
+                    // Create a vec of conditions and their target blocks
+                    let mut conditions = Vec::new();
+
+                    // Create blocks for each case
+                    let except_blocks: Vec<_> = stmt_try
+                        .handlers
+                        .iter()
+                        .map(|ExceptHandler::ExceptHandler(handler)| (handler, self.new_block()))
+                        .collect();
+
+                    // Add conditions for each case
+                    let mut has_bare_except = false;
+                    for (handler, block) in &except_blocks {
+                        if handler.type_.is_none() {
+                            has_bare_except = true
+                        }
+                        conditions.push((Condition::ExceptHandler(handler), *block));
+                    }
+
+                    // Add `else` if present
+                    let maybe_else_block = if stmt_try.orelse.is_empty() {
+                        None
+                    } else {
+                        Some(self.new_block())
+                    };
+
+                    // If no exception is raised, flow continues
+                    // to `else` (if present), otherwise to `finally`
+                    // (if present), otherwise to the next block.
+                    match (maybe_else_block, maybe_finally_block) {
+                        (Some(else_block), _) => conditions.push((Condition::Else, else_block)),
+                        (_, Some(finally_block)) => {
+                            conditions.push((Condition::Else, finally_block))
+                        }
+                        (None, None) => conditions.push((Condition::Else, next_block)),
+                    }
+
+                    // If there are no catchall except handlers,
+                    // add edge to indicate the other exceptions
+                    // will direct flow to `finally` (where they
+                    // will then be re-raised unless masked by an
+                    // early jump).
+                    if !has_bare_except && maybe_finally_block.is_some() {
+                        conditions
+                            .push((Condition::UncaughtException, maybe_finally_block.unwrap()))
+                    }
+
+                    // Add the switch edge from current to all cases
+                    let edge = Self::Edge::switch(conditions);
+                    self.add_edge(edge);
+
+                    // Process each case's body
+                    for (handler, block) in except_blocks {
+                        self.move_to(block);
+                        self.update_exit(maybe_finally_block.unwrap_or(next_block));
+                        self.process_stmts(&handler.body);
+                    }
+
+                    // Process the `else` clause if present
+                    if let Some(else_block) = maybe_else_block {
+                        self.move_to(else_block);
+                        self.update_exit(maybe_finally_block.unwrap_or(next_block));
+                        self.process_stmts(&stmt_try.orelse);
+                    }
+
+                    // Process the `finally` clause if present
+                    if let Some(finally_block) = maybe_finally_block {
+                        self.move_to(finally_block);
+                        self.update_exit(next_block);
+                        self.process_stmts(&stmt_try.finalbody);
+                    }
+
+                    // Restore the old exit
+                    self.update_exit(old_exit);
+
+                    // Continue from next_block
+                    self.move_to(next_block);
                 }
                 Stmt::With(_) => {
                     self.push_stmt(stmt);

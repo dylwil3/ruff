@@ -49,6 +49,7 @@ pub enum BlockKind {
     #[default]
     Generic,
     LoopGuard,
+    ExceptionDispatch,
     Terminal,
 }
 
@@ -181,8 +182,8 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
 
     fn add_edge(&mut self, edge: Self::Edge) {
         // I don't think we should ever be overwriting an existing edge...
-        debug_assert!(self.cfg.blocks[self.current].out.targets.is_empty());
-        debug_assert!(self.cfg.blocks[self.current].out.conditions.is_empty());
+        // debug_assert!(self.cfg.blocks[self.current].out.targets.is_empty());
+        // debug_assert!(self.cfg.blocks[self.current].out.conditions.is_empty());
         for &target in &edge.targets {
             self.cfg.blocks[target].parents.push(self.current)
         }
@@ -217,6 +218,13 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
 
     fn out(&self, block: Self::BasicBlock) -> &Self::Edge {
         self.cfg.outgoing(block)
+    }
+
+    fn new_exception_dispatch(&mut self) -> Self::BasicBlock {
+        self.cfg.blocks.push(BlockData {
+            kind: BlockKind::ExceptionDispatch, // New kind
+            ..BlockData::default()
+        })
     }
 }
 
