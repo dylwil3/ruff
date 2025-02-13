@@ -87,6 +87,33 @@ def func():
     finally:
         print("finally")
 
+def func():
+    try:
+        print("try")
+    except:
+        print("except")
+    finally:
+        print("finally")
+
+def func():
+    x = 1
+    try:
+        print("try")
+    except:
+        print("except")
+    finally:
+        print("finally")
+    x = 2
+        
+
+def func():
+    try:
+        for i in [1,2,3]:
+            foo(i)
+    except:
+        print("except")
+    finally:
+        print("finally")
 # def func():
 #     try:
 #         print("try")

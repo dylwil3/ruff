@@ -329,3 +329,106 @@ flowchart TD
 	node5-->|"Else"|node3
 	node6-->node5
 ```
+
+## Function 11
+### Source
+```python
+def func():
+    try:
+        print("try")
+    except:
+        print("except")
+    finally:
+        print("finally")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["EMPTY"]
+	node1((("EXIT")))
+	node2["print(#quot;try#quot;)"]
+	node3["EXCEPTION DISPATCH"]
+	node4["print(#quot;finally#quot;)"]
+	node5["RECOVERY"]
+	node6["print(#quot;except#quot;)"]
+	node0-->node2
+	node2-->node3
+	node3-->|"except any exception"|node6
+	node3-->|"Else"|node4
+	node4-->node5
+	node5==>node1
+	node6-->node4
+```
+
+## Function 12
+### Source
+```python
+def func():
+    x = 1
+    try:
+        print("try")
+    except:
+        print("except")
+    finally:
+        print("finally")
+    x = 2
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["x = 1"]
+	node1((("EXIT")))
+	node2["print(#quot;try#quot;)"]
+	node3["x = 2"]
+	node4["EXCEPTION DISPATCH"]
+	node5["print(#quot;finally#quot;)"]
+	node6["RECOVERY"]
+	node7["print(#quot;except#quot;)"]
+	node0-->node2
+	node2-->node4
+	node3==>node1
+	node4-->|"except any exception"|node7
+	node4-->|"Else"|node5
+	node5-->node6
+	node6-->node3
+	node7-->node5
+```
+
+## Function 13
+### Source
+```python
+def func():
+    try:
+        for i in [1,2,3]:
+            foo(i)
+    except:
+        print("except")
+    finally:
+        print("finally")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["EMPTY"]
+	node1((("EXIT")))
+	node2["EMPTY"]
+	node3["EXCEPTION DISPATCH"]
+	node4["print(#quot;finally#quot;)"]
+	node5["RECOVERY"]
+	node6["LOOP GUARD"]
+	node7["foo(i)"]
+	node8["print(#quot;except#quot;)"]
+	node0-->node2
+	node2-->node6
+	node3-->|"except any exception"|node8
+	node3-->|"Else"|node4
+	node4-->node5
+	node5==>node1
+	node6-->|"for i in [1,2,3]"|node7
+	node6-->|"Else"|node3
+	node7-->node6
+	node8-->node4
+```
