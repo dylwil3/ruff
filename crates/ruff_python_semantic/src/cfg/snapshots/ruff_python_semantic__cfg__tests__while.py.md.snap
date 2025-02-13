@@ -14,7 +14,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node3["LOOP GUARD"]
@@ -39,7 +39,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["return #quot;unreachable#quot;"]
@@ -65,7 +65,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return #quot;also unreachable#quot;"]
 	node3["LOOP GUARD"]
@@ -91,7 +91,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return #quot;unreachable#quot;"]
 	node3["LOOP GUARD"]
@@ -116,7 +116,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["return 1"]
@@ -142,7 +142,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return #quot;also unreachable#quot;"]
 	node3["LOOP GUARD"]
@@ -218,7 +218,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node3["LOOP GUARD"]
@@ -307,7 +307,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 0"]
 	node3["LOOP GUARD"]
@@ -333,7 +333,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["continue"]
@@ -354,7 +354,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["continue"]
@@ -375,7 +375,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["break"]
@@ -396,7 +396,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["break"]
@@ -418,7 +418,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["SWITCH"]
@@ -443,7 +443,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["SWITCH"]
@@ -471,7 +471,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["x = 3"]
 	node3["LOOP GUARD"]
@@ -502,7 +502,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["x = 3"]
 	node3["LOOP GUARD"]
@@ -533,7 +533,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["x = 3"]
 	node3["LOOP GUARD"]

@@ -1,6 +1,5 @@
 ---
 source: crates/ruff_python_semantic/src/cfg/mod.rs
-assertion_line: 245
 description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
 ---
 ## Function 0
@@ -18,7 +17,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 2"]
 	node3["x = 1
@@ -49,7 +48,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 2"]
 	node3["x = 1
@@ -81,7 +80,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(#quot;out of the loop#quot;)"]
 	node3["LOOP GUARD"]

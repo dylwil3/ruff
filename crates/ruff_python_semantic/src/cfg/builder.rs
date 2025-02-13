@@ -72,7 +72,7 @@ pub trait ControlEdge<'stmt> {
 /// Implementations of this trait can construct CFGs by adding basic blocks,
 /// statements, and edges while maintaining loop context.
 pub trait CFGBuilder<'stmt> {
-    type BasicBlock: fmt::Debug + Copy;
+    type BasicBlock: fmt::Debug + Copy + Eq;
     type Edge: ControlEdge<'stmt, Block = Self::BasicBlock>;
     type Graph: ControlFlowGraph<'stmt, Block = Self::BasicBlock, Edge = Self::Edge>;
 
@@ -92,8 +92,12 @@ pub trait CFGBuilder<'stmt> {
     /// This is the block that return statements will target.
     fn terminal(&self) -> Self::BasicBlock;
 
-    fn at_terminal(&self) -> bool;
-    fn at_exit(&self) -> bool;
+    fn at_terminal(&self) -> bool {
+        self.current() == self.terminal()
+    }
+    fn at_exit(&self) -> bool {
+        self.current() == self.current_exit()
+    }
 
     /// Updates the current exit block.
     fn update_exit(&mut self, new_exit: Self::BasicBlock);
@@ -169,8 +173,10 @@ pub trait CFGBuilder<'stmt> {
                     // Create the loop guard block with the test,
                     // and traverse unconditional edge to it.
                     let guard = self.new_loop_guard(stmt);
-                    self.add_edge(Self::Edge::always(guard));
-                    self.move_to(guard);
+                    if self.current() != guard {
+                        self.add_edge(Self::Edge::always(guard));
+                        self.move_to(guard);
+                    }
 
                     // Create a block for the loop body
                     let body = self.new_block();
@@ -230,8 +236,10 @@ pub trait CFGBuilder<'stmt> {
 
                     // Create the loop guard block with the iterator
                     let guard = self.new_loop_guard(stmt);
-                    self.add_edge(Self::Edge::always(guard));
-                    self.move_to(guard);
+                    if self.current() != guard {
+                        self.add_edge(Self::Edge::always(guard));
+                        self.move_to(guard);
+                    }
 
                     // Create blocks for the loop body and else clause
                     let body = self.new_block();
@@ -455,9 +463,11 @@ pub trait CFGBuilder<'stmt> {
                     };
 
                     self.push_try_context(try_kind);
-                    let try_block = self.new_block();
-                    self.add_edge(Self::Edge::always(try_block));
-                    self.move_to(try_block);
+                    let try_block = self.new_try_block();
+                    if self.current() != try_block {
+                        self.add_edge(Self::Edge::always(try_block));
+                        self.move_to(try_block);
+                    }
                     let next_block = self.next_or_exit(&mut stmts);
 
                     let old_exit = self.current_exit();
@@ -752,6 +762,8 @@ pub trait CFGBuilder<'stmt> {
             self.add_edge(edge);
         }
     }
+
+    fn new_try_block(&mut self) -> Self::BasicBlock;
 
     /// Returns the current loop exit block without removing it.
     fn loop_exit(&self) -> Self::BasicBlock;

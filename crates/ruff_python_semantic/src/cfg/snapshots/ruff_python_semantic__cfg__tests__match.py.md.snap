@@ -15,7 +15,7 @@ def func(status):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return #quot;unreachable#quot;"]
 	node3["return 0"]
@@ -37,7 +37,7 @@ def func(status):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 0"]
 	node3["return 1"]
@@ -61,7 +61,7 @@ def func(status):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 1"]
 	node3["return 0"]
@@ -84,7 +84,7 @@ def func(status):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 6"]
 	node3["return 5"]
@@ -109,7 +109,7 @@ def func(status):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 0"]
 	node3["return 5"]
@@ -139,7 +139,7 @@ def func(status):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 0"]
 	node3["return 1"]
@@ -267,7 +267,7 @@ def func(points):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(#quot;No points#quot;)"]
 	node3["print(#quot;The origin#quot;)"]
@@ -300,7 +300,7 @@ def func(point):
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(f#quot;Y=X at {x}#quot;)"]
 	node3["print(f#quot;Not on the diagonal#quot;)"]

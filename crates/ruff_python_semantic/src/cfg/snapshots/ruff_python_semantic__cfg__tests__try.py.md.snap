@@ -15,7 +15,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(#quot;try#quot;)"]
 	node3["EXCEPTION DISPATCH"]
@@ -71,7 +71,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(#quot;try#quot;)"]
 	node3["EXCEPTION DISPATCH"]
@@ -100,9 +100,9 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["ENTER TRY"]
 	node3["EXCEPTION DISPATCH"]
 	node4["LOOP GUARD"]
 	node5["foo(i)"]
@@ -132,7 +132,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(#quot;try#quot;)"]
 	node3["EXCEPTION DISPATCH"]
@@ -196,7 +196,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(#quot;try#quot;)"]
 	node3["EXCEPTION DISPATCH"]
@@ -229,9 +229,9 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["ENTER TRY"]
 	node3["EXCEPTION DISPATCH"]
 	node4["LOOP GUARD"]
 	node5["foo(i)"]
@@ -261,7 +261,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(#quot;try#quot;)"]
 	node3["print(#quot;finally#quot;)"]
@@ -314,9 +314,9 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["ENTER TRY"]
 	node3["print(#quot;finally#quot;)"]
 	node4["RECOVERY"]
 	node5["LOOP GUARD"]
@@ -345,7 +345,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(#quot;try#quot;)"]
 	node3["EXCEPTION DISPATCH"]
@@ -412,9 +412,9 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["ENTER TRY"]
 	node3["EXCEPTION DISPATCH"]
 	node4["print(#quot;finally#quot;)"]
 	node5["RECOVERY"]
@@ -450,7 +450,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print(#quot;try#quot;)"]
 	node3["EXCEPTION DISPATCH"]
@@ -525,9 +525,9 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
-	node2["EMPTY"]
+	node2["ENTER TRY"]
 	node3["EXCEPTION DISPATCH"]
 	node4["print(#quot;finally#quot;)"]
 	node5["RECOVERY"]

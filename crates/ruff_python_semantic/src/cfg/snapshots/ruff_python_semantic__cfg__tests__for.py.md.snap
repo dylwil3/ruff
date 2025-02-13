@@ -13,7 +13,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["print(i)"]
@@ -36,7 +36,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["print(i)"]
@@ -61,7 +61,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 0"]
 	node3["LOOP GUARD"]
@@ -91,7 +91,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 2"]
 	node3["LOOP GUARD"]
@@ -119,7 +119,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["continue"]
@@ -141,7 +141,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["SWITCH"]
@@ -165,7 +165,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["break"]
@@ -187,7 +187,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["SWITCH"]
@@ -213,7 +213,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["pass"]
@@ -239,7 +239,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["x = 1"]
 	node3["LOOP GUARD"]
@@ -266,7 +266,7 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["LOOP GUARD"]
 	node3["pass"]
@@ -298,31 +298,29 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print('hello')"]
 	node3["LOOP GUARD"]
-	node4["EMPTY"]
+	node4["LOOP GUARD"]
 	node5["x = 3
 SWITCH"]
-	node6["LOOP GUARD"]
-	node7["x = 2
+	node6["x = 2
 SWITCH"]
+	node7["break"]
 	node8["break"]
-	node9["break"]
 	node0-->node3
 	node2==>node1
 	node3-->|"for i in range(13)"|node4
 	node3-->|"Else"|node2
-	node4-->node6
-	node5-->|"True"|node9
+	node4-->|"for i in range(12)"|node6
+	node4-->|"Else"|node5
+	node5-->|"True"|node8
 	node5-->|"Else"|node3
-	node6-->|"for i in range(12)"|node7
-	node6-->|"Else"|node5
-	node7-->|"True"|node8
-	node7-->|"Else"|node6
-	node8-->node5
-	node9-->node2
+	node6-->|"True"|node7
+	node6-->|"Else"|node4
+	node7-->node5
+	node8-->node2
 ```
 
 ## Function 12
@@ -345,31 +343,29 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print('hello')"]
 	node3["LOOP GUARD"]
-	node4["EMPTY"]
+	node4["LOOP GUARD"]
 	node5["x = 3
 SWITCH"]
-	node6["LOOP GUARD"]
-	node7["x = 2
+	node6["x = 2
 SWITCH"]
-	node8["continue"]
-	node9["break"]
+	node7["continue"]
+	node8["break"]
 	node0-->node3
 	node2==>node1
 	node3-->|"for i in range(13)"|node4
 	node3-->|"Else"|node2
-	node4-->node6
-	node5-->|"True"|node9
+	node4-->|"for i in range(12)"|node6
+	node4-->|"Else"|node5
+	node5-->|"True"|node8
 	node5-->|"Else"|node3
-	node6-->|"for i in range(12)"|node7
-	node6-->|"Else"|node5
-	node7-->|"True"|node8
-	node7-->|"Else"|node6
-	node8-->node6
-	node9-->node2
+	node6-->|"True"|node7
+	node6-->|"Else"|node4
+	node7-->node4
+	node8-->node2
 ```
 
 ## Function 13
@@ -392,31 +388,29 @@ def func():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["print('hello')"]
 	node3["LOOP GUARD"]
-	node4["EMPTY"]
+	node4["LOOP GUARD"]
 	node5["x = 3
 SWITCH"]
-	node6["LOOP GUARD"]
-	node7["x = 2
+	node6["x = 2
 SWITCH"]
-	node8["break"]
-	node9["continue"]
+	node7["break"]
+	node8["continue"]
 	node0-->node3
 	node2==>node1
 	node3-->|"for i in range(13)"|node4
 	node3-->|"Else"|node2
-	node4-->node6
-	node5-->|"True"|node9
+	node4-->|"for i in range(12)"|node6
+	node4-->|"Else"|node5
+	node5-->|"True"|node8
 	node5-->|"Else"|node3
-	node6-->|"for i in range(12)"|node7
-	node6-->|"Else"|node5
-	node7-->|"True"|node8
-	node7-->|"Else"|node6
-	node8-->node5
-	node9-->node3
+	node6-->|"True"|node7
+	node6-->|"Else"|node4
+	node7-->node5
+	node8-->node3
 ```
 
 ## Function 14
@@ -434,7 +428,7 @@ def f():
 ### Control Flow Graph
 ```mermaid
 flowchart TD
-	node0["EMPTY"]
+	node0["START"]
 	node1((("EXIT")))
 	node2["return 3"]
 	node3["LOOP GUARD"]

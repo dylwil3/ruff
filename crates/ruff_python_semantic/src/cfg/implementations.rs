@@ -50,7 +50,9 @@ impl<'stmt> ControlEdge<'stmt> for NextBlock<'stmt> {
 pub enum BlockKind {
     #[default]
     Generic,
+    Start,
     LoopGuard,
+    EnterTry,
     ExceptionDispatch,
     Recovery,
     Terminal,
@@ -141,7 +143,10 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
 
     fn with_capacity(capacity: usize) -> Self {
         let mut blocks = IndexVec::with_capacity(capacity);
-        let initial = blocks.push(BlockData::default());
+        let initial = blocks.push(BlockData {
+            kind: BlockKind::Start,
+            ..BlockData::default()
+        });
         let terminal = blocks.push(BlockData {
             kind: BlockKind::Terminal,
             ..BlockData::default()
@@ -191,10 +196,21 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     fn new_loop_guard(&mut self, _stmt: &'stmt Stmt) -> Self::BasicBlock {
         // For now, just create a new block - we might want to store the
         // stmt association later for analysis
-        self.cfg.blocks.push(BlockData {
-            kind: BlockKind::LoopGuard,
-            ..BlockData::default()
-        })
+        let Some(currblock) = self.cfg.blocks.get_mut(self.current) else {
+            return self.cfg.blocks.push(BlockData {
+                kind: BlockKind::LoopGuard,
+                ..BlockData::default()
+            });
+        };
+        if matches!(currblock.kind, BlockKind::Generic) && currblock.stmts.is_empty() {
+            currblock.kind = BlockKind::LoopGuard;
+            self.current
+        } else {
+            self.cfg.blocks.push(BlockData {
+                kind: BlockKind::LoopGuard,
+                ..BlockData::default()
+            })
+        }
     }
 
     fn add_edge(&mut self, edge: Self::Edge) {
@@ -275,6 +291,32 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
             return None;
         };
         Some((ctxt.guard, ctxt.exit))
+    }
+
+    fn new_try_block(&mut self) -> Self::BasicBlock {
+        // // For now, just create a new block - we might want to store the
+        // // stmt association later for analysis
+        // let Some(currblock) = self.cfg.blocks.get_mut(self.current) else {
+        //     return self.cfg.blocks.push(BlockData {
+        //         kind: BlockKind::EnterTry,
+        //         ..BlockData::default()
+        //     });
+        // };
+        // if matches!(currblock.kind, BlockKind::Generic | BlockKind::Start)
+        //     && currblock.stmts.is_empty()
+        // {
+        //     currblock.kind = BlockKind::EnterTry;
+        //     self.current
+        // } else {
+        //     self.cfg.blocks.push(BlockData {
+        //         kind: BlockKind::EnterTry,
+        //         ..BlockData::default()
+        //     })
+        // }
+        self.cfg.blocks.push(BlockData {
+            kind: BlockKind::EnterTry,
+            ..BlockData::default()
+        })
     }
 }
 

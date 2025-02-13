@@ -245,6 +245,21 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
                     statements.join("\n")
                 }
             }
+            BlockKind::Start => {
+                if self
+                    .cfg
+                    .outgoing(node)
+                    .conditions()
+                    .any(|cond| matches!(cond, Condition::Test(_)))
+                {
+                    statements.push("SWITCH".to_string());
+                }
+                if statements.is_empty() {
+                    "START".to_string()
+                } else {
+                    statements.join("\n")
+                }
+            }
             BlockKind::LoopGuard => "LOOP GUARD".to_string(),
             BlockKind::Terminal => {
                 return MermaidNode {
@@ -254,6 +269,13 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
             }
             BlockKind::ExceptionDispatch => "EXCEPTION DISPATCH".to_string(),
             BlockKind::Recovery => "RECOVERY".to_string(),
+            BlockKind::EnterTry => {
+                if statements.is_empty() {
+                    "ENTER TRY".to_string()
+                } else {
+                    statements.join("\n")
+                }
+            }
         };
 
         MermaidNode::with_content(content)
