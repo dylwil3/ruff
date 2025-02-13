@@ -497,7 +497,48 @@ pub trait CFGBuilder<'stmt> {
                                 self.process_stmts(&handler.body);
                             }
                         }
-                        TryKind::TryExceptElse => todo!(),
+                        TryKind::TryExceptElse => {
+                            let dispatch_block = self.new_exception_dispatch();
+                            self.update_exit(dispatch_block);
+                            self.process_stmts(&stmt_try.body);
+
+                            self.move_to(dispatch_block);
+                            self.set_try_state(TryState::Dispatch);
+                            self.update_exit(old_exit);
+                            // Create a vec of conditions and their target blocks
+                            let mut conditions = Vec::new();
+
+                            // Create blocks for each case
+                            let except_blocks: Vec<_> = stmt_try
+                                .handlers
+                                .iter()
+                                .map(|ExceptHandler::ExceptHandler(handler)| {
+                                    (handler, self.new_block())
+                                })
+                                .collect();
+
+                            // Add conditions for each case
+                            for (handler, block) in &except_blocks {
+                                conditions.push((Condition::ExceptHandler(handler), *block));
+                            }
+
+                            let else_block = self.new_block();
+                            conditions.push((Condition::Else, else_block));
+                            // Add the switch edge from current to all cases
+                            let edge = Self::Edge::switch(conditions);
+                            self.add_edge(edge);
+                            // Process each case's body
+                            self.set_try_state(TryState::Except);
+                            for (handler, block) in except_blocks {
+                                self.move_to(block);
+                                self.update_exit(next_block);
+                                self.process_stmts(&handler.body);
+                            }
+                            // Process else body
+                            self.set_try_state(TryState::Else);
+                            self.move_to(else_block);
+                            self.process_stmts(&stmt_try.orelse);
+                        }
                         TryKind::TryExceptFinally => todo!(),
                         TryKind::TryExceptElseFinally => todo!(),
                     }

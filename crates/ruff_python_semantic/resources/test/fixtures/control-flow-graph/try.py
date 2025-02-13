@@ -27,6 +27,43 @@ def func():
     except:
         print("whoops")
 
+def func():
+    try:
+        print("try")
+    except:
+        print("except")
+    else:
+        print("else")
+
+def func():
+    x = 1
+    try:
+        print("try")
+    except:
+        print("except")
+    else:
+        print("else")
+    x = 2
+        
+def func():
+    try:
+        print("try")
+    except ValueError:
+        print("value error")
+    except TypeError:
+        print("type error")
+    else:
+        print("else")
+
+def func():
+    try:
+        for i in [1,2,3]:
+            foo(i)
+    except:
+        print("whoops")
+    else:
+        print("else")
+
 
 # def func():
 #     try:
