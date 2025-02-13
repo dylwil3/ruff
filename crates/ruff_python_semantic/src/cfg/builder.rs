@@ -781,6 +781,7 @@ pub trait CFGBuilder<'stmt> {
     fn pop_loop(&mut self) -> Option<(Self::BasicBlock, Self::BasicBlock)>;
 
     fn push_try_context(&mut self, kind: TryKind);
+    fn try_contexts(&self) -> &Vec<TryContext>;
     fn last_try_context(&self) -> Option<&TryContext<'stmt>>;
     fn last_mut_try_context(&mut self) -> Option<&mut TryContext<'stmt>>;
     fn pop_try_context(&mut self) -> Option<TryContext<'stmt>>;
@@ -790,14 +791,13 @@ pub trait CFGBuilder<'stmt> {
         }
     }
     fn should_defer_jumps(&self) -> bool {
-        let Some(try_ctxt) = self.last_try_context() else {
-            return false;
-        };
-        match try_ctxt.state {
-            TryState::Try => true,
-            TryState::Except | TryState::Else if try_ctxt.has_finally() => true,
-            _ => false,
-        }
+        self.try_contexts()
+            .iter()
+            .any(|try_ctxt| match try_ctxt.state {
+                TryState::Try => true,
+                TryState::Except | TryState::Else if try_ctxt.has_finally() => true,
+                _ => false,
+            })
     }
     fn push_deferred_jump(&mut self, stmt: &'stmt Stmt) {
         let Some(try_ctxt) = self.last_mut_try_context() else {
