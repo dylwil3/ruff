@@ -820,6 +820,7 @@ pub trait CFGBuilder<'stmt> {
         // don't resolve any jumps and keep deferring them.
         if self.should_defer_jumps() {
             self.extend_deferred_jumps(deferred_jumps);
+            self.add_edge(Self::Edge::always(self.current_exit()));
         } else {
             let mut conditions = Vec::new();
             conditions.extend(deferred_jumps.into_iter().map(|stmt| match stmt {
