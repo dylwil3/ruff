@@ -2,6 +2,8 @@ use crate::cfg::builder::{CFGBuilder, Condition, ControlEdge, ControlFlowGraph, 
 use ruff_index::{newtype_index, IndexVec};
 use ruff_python_ast::Stmt;
 
+use super::builder::TryKind;
+
 pub fn build_cfg(stmts: &[Stmt]) -> CFG<'_> {
     let mut builder = CFGConstructor::with_capacity(stmts.len());
     builder.process_stmts(stmts);
@@ -107,13 +109,25 @@ impl<'stmt> ControlFlowGraph<'stmt> for CFG<'stmt> {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub struct LoopContext {
+    guard: BlockId,
+    exit: BlockId,
+}
+
+impl LoopContext {
+    pub fn new(guard: BlockId, exit: BlockId) -> Self {
+        Self { guard, exit }
+    }
+}
+
 #[derive(Debug)]
 pub struct CFGConstructor<'stmt> {
     cfg: CFG<'stmt>,
     current: BlockId,
     current_exit: BlockId,
-    loop_exits: Vec<BlockId>,
-    try_contexts: Vec<TryContext>,
+    loop_contexts: Vec<LoopContext>,
+    try_contexts: Vec<TryContext<'stmt>>,
 }
 
 impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
@@ -141,7 +155,7 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
             },
             current: initial,
             current_exit: terminal,
-            loop_exits: Vec::new(),
+            loop_contexts: Vec::new(),
             try_contexts: Vec::new(),
         }
     }
@@ -194,18 +208,10 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
     }
 
     fn loop_exit(&self) -> Self::BasicBlock {
-        *self
-            .loop_exits
+        self.loop_contexts
             .last()
             .expect("Syntax error to have `break` or `continue` outside of a loop")
-    }
-
-    fn push_loop_exit(&mut self, exit: Self::BasicBlock) {
-        self.loop_exits.push(exit);
-    }
-
-    fn pop_loop_exit(&mut self) -> Self::BasicBlock {
-        self.loop_exits.pop().expect("loop exit stack empty")
+            .exit
     }
 
     fn build(self) -> Self::Graph {
@@ -230,19 +236,19 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
         })
     }
 
-    fn push_try_context(&mut self, context: TryContext) {
-        self.try_contexts.push(context);
+    fn push_try_context(&mut self, kind: TryKind) {
+        self.try_contexts.push(TryContext::new(kind));
     }
 
-    fn last_try_context(&self) -> Option<&TryContext> {
+    fn last_try_context(&self) -> Option<&TryContext<'stmt>> {
         self.try_contexts.last()
     }
 
-    fn last_mut_try_context(&mut self) -> Option<&mut TryContext> {
+    fn last_mut_try_context(&mut self) -> Option<&mut TryContext<'stmt>> {
         self.try_contexts.last_mut()
     }
 
-    fn pop_try_context(&mut self) -> Option<TryContext> {
+    fn pop_try_context(&mut self) -> Option<TryContext<'stmt>> {
         self.try_contexts.pop()
     }
 
@@ -251,6 +257,24 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
             kind: BlockKind::Recovery, // New kind
             ..BlockData::default()
         })
+    }
+
+    fn loop_guard(&self) -> Self::BasicBlock {
+        self.loop_contexts
+            .last()
+            .expect("Must be inside loop for `continue`.")
+            .guard
+    }
+
+    fn push_loop(&mut self, guard: Self::BasicBlock, exit: Self::BasicBlock) {
+        self.loop_contexts.push(LoopContext::new(guard, exit));
+    }
+
+    fn pop_loop(&mut self) -> Option<(Self::BasicBlock, Self::BasicBlock)> {
+        let Some(ctxt) = self.loop_contexts.pop() else {
+            return None;
+        };
+        Some((ctxt.guard, ctxt.exit))
     }
 }
 

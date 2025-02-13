@@ -340,6 +340,19 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
                             }
                         }
                     }
+                    Condition::Deferred(_) => {
+                        if target == self.cfg.terminal() {
+                            MermaidEdge {
+                                kind: MermaidEdgeKind::ThickArrow,
+                                content: "Deferred".to_string(),
+                            }
+                        } else {
+                            MermaidEdge {
+                                kind: MermaidEdgeKind::Arrow,
+                                content: "Deferred".to_string(),
+                            }
+                        }
+                    }
                 };
                 (target, edge)
             })

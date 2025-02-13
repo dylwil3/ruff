@@ -50,6 +50,8 @@ pub enum Condition<'stmt> {
     Else,
     /// Unconditional edge
     Always,
+    /// Deferred
+    Deferred(&'stmt Stmt),
 }
 
 pub trait ControlEdge<'stmt> {
@@ -174,7 +176,7 @@ pub trait CFGBuilder<'stmt> {
                     let body = self.new_block();
 
                     // Set up break/continue targets
-                    self.push_loop_exit(next_block);
+                    self.push_loop(guard, next_block);
 
                     // Add the conditional edge from guard
                     let (conditions, else_block) = if stmt_while.orelse.is_empty() {
@@ -219,7 +221,7 @@ pub trait CFGBuilder<'stmt> {
                     }
 
                     // Clean up loop context and continue from next block
-                    self.pop_loop_exit();
+                    self.pop_loop();
                     self.move_to(next_block);
                 }
                 Stmt::For(stmt_for) => {
@@ -236,7 +238,7 @@ pub trait CFGBuilder<'stmt> {
 
                     // Set up break/continue targets
                     // break jumps directly to next_block, skipping else clause
-                    self.push_loop_exit(next_block);
+                    self.push_loop(guard, next_block);
 
                     // Add the conditional edge from guard
                     let (conditions, else_block) = if stmt_for.orelse.is_empty() {
@@ -295,7 +297,7 @@ pub trait CFGBuilder<'stmt> {
                     }
 
                     // Clean up loop context and continue from next block
-                    self.pop_loop_exit();
+                    self.pop_loop();
                     self.move_to(next_block);
                 }
 
@@ -437,23 +439,22 @@ pub trait CFGBuilder<'stmt> {
                     //   - resolve jumps
                     //
 
-                    let try_context = match (
+                    let try_kind = match (
                         !stmt_try.handlers.is_empty(),
                         !stmt_try.orelse.is_empty(),
                         !stmt_try.finalbody.is_empty(),
                     ) {
-                        (true, false, false) => TryContext::new(TryKind::TryExcept),
-                        (false, false, true) => TryContext::new(TryKind::TryFinally),
-                        (true, true, false) => TryContext::new(TryKind::TryExceptElse),
-                        (true, false, true) => TryContext::new(TryKind::TryExceptFinally),
-                        (true, true, true) => TryContext::new(TryKind::TryExceptElseFinally),
-                        (x, y, z) => {
-                            dbg!("{},{},{}", x, y, z);
+                        (true, false, false) => TryKind::TryExcept,
+                        (false, false, true) => TryKind::TryFinally,
+                        (true, true, false) => TryKind::TryExceptElse,
+                        (true, false, true) => TryKind::TryExceptFinally,
+                        (true, true, true) => TryKind::TryExceptElseFinally,
+                        _ => {
                             unreachable!("Invalid try statement.")
                         }
                     };
 
-                    self.push_try_context(try_context);
+                    self.push_try_context(try_kind);
                     let try_block = self.new_block();
                     self.add_edge(Self::Edge::always(try_block));
                     self.move_to(try_block);
@@ -461,7 +462,7 @@ pub trait CFGBuilder<'stmt> {
 
                     let old_exit = self.current_exit();
 
-                    match try_context.kind {
+                    match &try_kind {
                         TryKind::TryFinally => {
                             let finally_block = self.new_block();
                             let recovery_block = self.new_recovery();
@@ -684,8 +685,12 @@ pub trait CFGBuilder<'stmt> {
                 // Jumps
                 Stmt::Return(_) => {
                     self.push_stmt(stmt);
-                    let edge = Self::Edge::always(self.terminal());
-                    self.add_edge(edge);
+                    if self.should_defer_jumps() {
+                        self.push_deferred_jump(stmt);
+                    } else {
+                        let edge = Self::Edge::always(self.terminal());
+                        self.add_edge(edge);
+                    }
 
                     if stmts.peek().is_some() {
                         let next_block = self.new_block();
@@ -694,8 +699,12 @@ pub trait CFGBuilder<'stmt> {
                 }
                 Stmt::Break(_) => {
                     self.push_stmt(stmt);
-                    let edge = Self::Edge::always(self.loop_exit());
-                    self.add_edge(edge);
+                    if self.should_defer_jumps() {
+                        self.push_deferred_jump(stmt);
+                    } else {
+                        let edge = Self::Edge::always(self.loop_exit());
+                        self.add_edge(edge);
+                    }
 
                     if stmts.peek().is_some() {
                         let next_block = self.new_block();
@@ -710,12 +719,12 @@ pub trait CFGBuilder<'stmt> {
 
                 Stmt::Continue(_) => {
                     self.push_stmt(stmt);
-                    // We should only be processing a `continue` while
-                    // inside a loop body. We will already have updated the
-                    // `current_exit` to the loop guard before descending into
-                    // the loop body.
-                    let edge = Self::Edge::always(self.current_exit());
-                    self.add_edge(edge);
+                    if self.should_defer_jumps() {
+                        self.push_deferred_jump(stmt);
+                    } else {
+                        let edge = Self::Edge::always(self.loop_guard());
+                        self.add_edge(edge);
+                    }
 
                     if stmts.peek().is_some() {
                         let next_block = self.new_block();
@@ -746,27 +755,71 @@ pub trait CFGBuilder<'stmt> {
 
     /// Returns the current loop exit block without removing it.
     fn loop_exit(&self) -> Self::BasicBlock;
+    /// Returns the current loop guard block without removing it.
+    fn loop_guard(&self) -> Self::BasicBlock;
 
     /// Pushes a block onto the loop exit stack.
     /// This block represents where control should flow when encountering a
     /// 'break' statement within a loop.
-    fn push_loop_exit(&mut self, exit: Self::BasicBlock);
+    fn push_loop(&mut self, guard: Self::BasicBlock, exit: Self::BasicBlock);
 
     /// Pops and returns the most recently pushed loop exit block.
     /// This is called when finishing the processing of a loop construct.
-    fn pop_loop_exit(&mut self) -> Self::BasicBlock;
+    fn pop_loop(&mut self) -> Option<(Self::BasicBlock, Self::BasicBlock)>;
 
-    fn push_try_context(&mut self, context: TryContext);
-    fn last_try_context(&self) -> Option<&TryContext>;
-    fn last_mut_try_context(&mut self) -> Option<&mut TryContext>;
-    fn pop_try_context(&mut self) -> Option<TryContext>;
+    fn push_try_context(&mut self, kind: TryKind);
+    fn last_try_context(&self) -> Option<&TryContext<'stmt>>;
+    fn last_mut_try_context(&mut self) -> Option<&mut TryContext<'stmt>>;
+    fn pop_try_context(&mut self) -> Option<TryContext<'stmt>>;
     fn set_try_state(&mut self, state: TryState) {
         if let Some(ctxt) = self.last_mut_try_context() {
             ctxt.state = state;
         }
     }
+    fn should_defer_jumps(&self) -> bool {
+        let Some(try_ctxt) = self.last_try_context() else {
+            return false;
+        };
+        match try_ctxt.state {
+            TryState::Try => true,
+            TryState::Except | TryState::Else if try_ctxt.has_finally() => true,
+            _ => false,
+        }
+    }
+    fn push_deferred_jump(&mut self, stmt: &'stmt Stmt) {
+        let Some(try_ctxt) = self.last_mut_try_context() else {
+            return;
+        };
+        try_ctxt.deferred_jumps.push(stmt);
+    }
+    fn extend_deferred_jumps(&mut self, jumps: Vec<&'stmt Stmt>) {
+        let Some(try_ctxt) = self.last_mut_try_context() else {
+            return;
+        };
+        try_ctxt.deferred_jumps.extend(jumps);
+    }
     fn resolve_deferred_jumps(&mut self) {
-        self.add_edge(Self::Edge::always(self.current_exit()));
+        let Some(try_context) = self.pop_try_context() else {
+            return;
+        };
+        let deferred_jumps = try_context.deferred_jumps;
+        // We may be nested inside _another_ try context, then we
+        // don't resolve any jumps and keep deferring them.
+        if self.should_defer_jumps() {
+            self.extend_deferred_jumps(deferred_jumps);
+        } else {
+            let mut conditions = Vec::new();
+            conditions.extend(deferred_jumps.into_iter().map(|stmt| match stmt {
+                Stmt::Return(_) => (Condition::Deferred(stmt), self.terminal()),
+                Stmt::Break(_) => (Condition::Deferred(stmt), self.loop_exit()),
+                Stmt::Continue(_) => (Condition::Deferred(stmt), self.loop_guard()),
+                _ => {
+                    todo!()
+                }
+            }));
+            conditions.push((Condition::Always, self.current_exit()));
+            self.add_edge(Self::Edge::switch(conditions));
+        }
     }
 
     fn build(self) -> Self::Graph;
@@ -791,17 +844,19 @@ pub enum TryState {
     Recovery,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct TryContext {
+#[derive(Debug, Clone)]
+pub struct TryContext<'stmt> {
     kind: TryKind,
     state: TryState,
+    deferred_jumps: Vec<&'stmt Stmt>,
 }
 
-impl TryContext {
-    fn new(kind: TryKind) -> Self {
+impl<'stmt> TryContext<'stmt> {
+    pub fn new(kind: TryKind) -> Self {
         Self {
             kind,
             state: TryState::Try,
+            deferred_jumps: Vec::new(),
         }
     }
 

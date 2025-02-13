@@ -199,6 +199,7 @@ mod tests {
     #[test_case("for.py")]
     #[test_case("async-for.py")]
     #[test_case("try.py")]
+    #[test_case("deferred.py")]
     // #[test_case("raise.py")]
     // #[test_case("assert.py")]
     // #[test_case("try-finally-nested-if-while.py")]
