@@ -528,6 +528,7 @@ pub trait CFGBuilder<'stmt> {
                                 self.update_exit(next_block);
                                 self.process_stmts(&handler.body);
                             }
+                            self.pop_try_context();
                         }
                         TryKind::TryExceptElse => {
                             let dispatch_block = self.new_exception_dispatch();
@@ -570,6 +571,7 @@ pub trait CFGBuilder<'stmt> {
                             self.set_try_state(TryState::Else);
                             self.move_to(else_block);
                             self.process_stmts(&stmt_try.orelse);
+                            self.pop_try_context();
                         }
                         TryKind::TryExceptFinally => {
                             let dispatch_block = self.new_exception_dispatch();
@@ -683,7 +685,6 @@ pub trait CFGBuilder<'stmt> {
 
                     // Restore the old exit
                     self.update_exit(old_exit);
-                    self.pop_try_context();
 
                     // Continue from next_block
                     self.move_to(next_block);
