@@ -318,6 +318,10 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
             ..BlockData::default()
         })
     }
+
+    fn try_contexts(&self) -> &Vec<TryContext> {
+        &self.try_contexts
+    }
 }
 
 #[cfg(test)]

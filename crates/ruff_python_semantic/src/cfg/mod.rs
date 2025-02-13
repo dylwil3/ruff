@@ -193,6 +193,10 @@ mod tests {
 
     // #[test_case("tmp.py")]
     #[test_case("simple.py")]
+    #[test_case("examples_canonical.py")]
+    #[test_case("examples_intermediate.py")]
+    #[test_case("examples_complex.py")]
+    #[test_case("examples_deferred.py")]
     #[test_case("if.py")]
     #[test_case("match.py")]
     #[test_case("while.py")]
