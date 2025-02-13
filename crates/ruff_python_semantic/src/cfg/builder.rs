@@ -414,117 +414,97 @@ pub trait CFGBuilder<'stmt> {
                     self.move_to(next_block);
                 }
                 Stmt::Try(stmt_try) => {
-                    // This is almost identical to a match statement,
-                    // but with some subtleties regarding the possible
-                    // `finally` block, and the need to update
-                    // the context stack.
+                    // - Make blocks:
+                    //   - try
+                    //   - dispatch (if excs)
+                    //   - excs
+                    //   - finally
+                    //   - recovery
+                    // - Push try context
+                    // - Set exit to dispatch/finally
+                    // - Process try
+                    // - If no finally, resolve jumps at dispatch
+                    // - From dispatch:
+                    //   - set exit to next/finally
+                    //   - add edges to except, else, finally
+                    //   - process except/else
+                    // - If finally:
+                    //   - set exit to recovery
+                    //   - process finally
+                    //   - move to recovery and set exit to next
+                    //   - resolve jumps
+                    //
 
-                    // Save the current exit for later
-                    let old_exit = self.current_exit();
+                    let try_context = match (
+                        !stmt_try.handlers.is_empty(),
+                        !stmt_try.orelse.is_empty(),
+                        !stmt_try.finalbody.is_empty(),
+                    ) {
+                        (true, false, false) => TryContext::new(TryKind::TryExcept),
+                        (false, false, true) => TryContext::new(TryKind::TryFinally),
+                        (true, true, false) => TryContext::new(TryKind::TryExceptElse),
+                        (true, false, true) => TryContext::new(TryKind::TryExceptFinally),
+                        (true, true, true) => TryContext::new(TryKind::TryExceptElseFinally),
+                        (x, y, z) => {
+                            dbg!("{},{},{}", x, y, z);
+                            unreachable!("Invalid try statement.")
+                        }
+                    };
 
-                    // First we move to a new block for the try
-                    // statement: even though execution unconditionally
-                    // flows into this block, we will often need
-                    // to run dataflow analyses differently within
-                    // a try block.
+                    self.push_try_context(try_context);
                     let try_block = self.new_block();
                     self.add_edge(Self::Edge::always(try_block));
                     self.move_to(try_block);
-
-                    // Next, we add a block, similar to the loop guard,
-                    // for handling control flow as we exit the `try`-block
-                    let dispatch_block = self.new_exception_dispatch();
-                    self.update_exit(dispatch_block);
-                    self.process_stmts(&stmt_try.body);
-                    self.move_to(dispatch_block);
-                    self.update_exit(old_exit);
-
-                    // Create a new block for any following statements
                     let next_block = self.next_or_exit(&mut stmts);
 
-                    // If there is a `finally` block, it will sometimes
-                    // replace the role of the terminal block and,
-                    // at other times, replace the role of the `next_block`
-                    let maybe_finally_block = if stmt_try.finalbody.is_empty() {
-                        None
-                    } else {
-                        Some(self.new_block())
-                    };
+                    let old_exit = self.current_exit();
 
-                    // Create a vec of conditions and their target blocks
-                    let mut conditions = Vec::new();
+                    match try_context.kind {
+                        TryKind::TryFinally => todo!(),
+                        TryKind::TryExcept => {
+                            let dispatch_block = self.new_exception_dispatch();
+                            self.update_exit(dispatch_block);
+                            self.process_stmts(&stmt_try.body);
 
-                    // Create blocks for each case
-                    let except_blocks: Vec<_> = stmt_try
-                        .handlers
-                        .iter()
-                        .map(|ExceptHandler::ExceptHandler(handler)| (handler, self.new_block()))
-                        .collect();
+                            self.move_to(dispatch_block);
+                            self.set_try_state(TryState::Dispatch);
+                            self.update_exit(old_exit);
+                            // Create a vec of conditions and their target blocks
+                            let mut conditions = Vec::new();
 
-                    // Add conditions for each case
-                    let mut has_bare_except = false;
-                    for (handler, block) in &except_blocks {
-                        if handler.type_.is_none() {
-                            has_bare_except = true
+                            // Create blocks for each case
+                            let except_blocks: Vec<_> = stmt_try
+                                .handlers
+                                .iter()
+                                .map(|ExceptHandler::ExceptHandler(handler)| {
+                                    (handler, self.new_block())
+                                })
+                                .collect();
+
+                            // Add conditions for each case
+                            for (handler, block) in &except_blocks {
+                                conditions.push((Condition::ExceptHandler(handler), *block));
+                            }
+                            conditions.push((Condition::Else, next_block));
+                            // Add the switch edge from current to all cases
+                            let edge = Self::Edge::switch(conditions);
+                            self.add_edge(edge);
+                            // Process each case's body
+                            self.set_try_state(TryState::Except);
+                            for (handler, block) in except_blocks {
+                                self.move_to(block);
+                                self.update_exit(next_block);
+                                self.process_stmts(&handler.body);
+                            }
                         }
-                        conditions.push((Condition::ExceptHandler(handler), *block));
-                    }
-
-                    // Add `else` if present
-                    let maybe_else_block = if stmt_try.orelse.is_empty() {
-                        None
-                    } else {
-                        Some(self.new_block())
-                    };
-
-                    // If no exception is raised, flow continues
-                    // to `else` (if present), otherwise to `finally`
-                    // (if present), otherwise to the next block.
-                    match (maybe_else_block, maybe_finally_block) {
-                        (Some(else_block), _) => conditions.push((Condition::Else, else_block)),
-                        (_, Some(finally_block)) => {
-                            conditions.push((Condition::Else, finally_block))
-                        }
-                        (None, None) => conditions.push((Condition::Else, next_block)),
-                    }
-
-                    // If there are no catchall except handlers,
-                    // add edge to indicate the other exceptions
-                    // will direct flow to `finally` (where they
-                    // will then be re-raised unless masked by an
-                    // early jump).
-                    if !has_bare_except && maybe_finally_block.is_some() {
-                        conditions
-                            .push((Condition::UncaughtException, maybe_finally_block.unwrap()))
-                    }
-
-                    // Add the switch edge from current to all cases
-                    let edge = Self::Edge::switch(conditions);
-                    self.add_edge(edge);
-
-                    // Process each case's body
-                    for (handler, block) in except_blocks {
-                        self.move_to(block);
-                        self.update_exit(maybe_finally_block.unwrap_or(next_block));
-                        self.process_stmts(&handler.body);
-                    }
-
-                    // Process the `else` clause if present
-                    if let Some(else_block) = maybe_else_block {
-                        self.move_to(else_block);
-                        self.update_exit(maybe_finally_block.unwrap_or(next_block));
-                        self.process_stmts(&stmt_try.orelse);
-                    }
-
-                    // Process the `finally` clause if present
-                    if let Some(finally_block) = maybe_finally_block {
-                        self.move_to(finally_block);
-                        self.update_exit(next_block);
-                        self.process_stmts(&stmt_try.finalbody);
+                        TryKind::TryExceptElse => todo!(),
+                        TryKind::TryExceptFinally => todo!(),
+                        TryKind::TryExceptElseFinally => todo!(),
                     }
 
                     // Restore the old exit
                     self.update_exit(old_exit);
+                    self.pop_try_context();
 
                     // Continue from next_block
                     self.move_to(next_block);
@@ -608,5 +588,92 @@ pub trait CFGBuilder<'stmt> {
     /// This is called when finishing the processing of a loop construct.
     fn pop_loop_exit(&mut self) -> Self::BasicBlock;
 
+    fn push_try_context(&mut self, context: TryContext);
+    fn last_try_context(&self) -> Option<&TryContext>;
+    fn last_mut_try_context(&mut self) -> Option<&mut TryContext>;
+    fn pop_try_context(&mut self) -> Option<TryContext>;
+    fn set_try_state(&mut self, state: TryState) {
+        if let Some(ctxt) = self.last_mut_try_context() {
+            ctxt.state = state;
+        }
+    }
+
     fn build(self) -> Self::Graph;
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum TryKind {
+    TryFinally,
+    TryExcept,
+    TryExceptElse,
+    TryExceptFinally,
+    TryExceptElseFinally,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum TryState {
+    Try,
+    Dispatch,
+    Except,
+    Else,
+    Finally,
+    Recovery,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct TryContext {
+    kind: TryKind,
+    state: TryState,
+}
+
+impl TryContext {
+    fn new(kind: TryKind) -> Self {
+        Self {
+            kind,
+            state: TryState::Try,
+        }
+    }
+
+    fn has_except(&self) -> bool {
+        matches!(
+            self.kind,
+            TryKind::TryExcept
+                | TryKind::TryExceptElse
+                | TryKind::TryExceptFinally
+                | TryKind::TryExceptElseFinally
+        )
+    }
+
+    fn has_else(&self) -> bool {
+        matches!(
+            self.kind,
+            TryKind::TryExceptElse | TryKind::TryExceptElseFinally
+        )
+    }
+
+    fn has_finally(&self) -> bool {
+        matches!(
+            self.kind,
+            TryKind::TryFinally | TryKind::TryExceptFinally | TryKind::TryExceptElseFinally
+        )
+    }
+
+    fn in_try(&self) -> bool {
+        matches!(self.state, TryState::Try)
+    }
+    fn in_dispatch(&self) -> bool {
+        matches!(self.state, TryState::Dispatch)
+    }
+    fn in_except(&self) -> bool {
+        matches!(self.state, TryState::Except)
+    }
+    fn in_else(&self) -> bool {
+        matches!(self.state, TryState::Else)
+    }
+    fn in_finally(&self) -> bool {
+        matches!(self.state, TryState::Finally)
+    }
+    fn in_recovery(&self) -> bool {
+        matches!(self.state, TryState::Recovery)
+    }
 }

@@ -1,4 +1,4 @@
-use crate::cfg::builder::{CFGBuilder, Condition, ControlEdge, ControlFlowGraph};
+use crate::cfg::builder::{CFGBuilder, Condition, ControlEdge, ControlFlowGraph, TryContext};
 use ruff_index::{newtype_index, IndexVec};
 use ruff_python_ast::Stmt;
 
@@ -112,6 +112,7 @@ pub struct CFGConstructor<'stmt> {
     current: BlockId,
     current_exit: BlockId,
     loop_exits: Vec<BlockId>,
+    try_contexts: Vec<TryContext>,
 }
 
 impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
@@ -140,6 +141,7 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
             current: initial,
             current_exit: terminal,
             loop_exits: Vec::new(),
+            try_contexts: Vec::new(),
         }
     }
 
@@ -225,6 +227,22 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
             kind: BlockKind::ExceptionDispatch, // New kind
             ..BlockData::default()
         })
+    }
+
+    fn push_try_context(&mut self, context: TryContext) {
+        self.try_contexts.push(context);
+    }
+
+    fn last_try_context(&self) -> Option<&TryContext> {
+        self.try_contexts.last()
+    }
+
+    fn last_mut_try_context(&mut self) -> Option<&mut TryContext> {
+        self.try_contexts.last_mut()
+    }
+
+    fn pop_try_context(&mut self) -> Option<TryContext> {
+        self.try_contexts.pop()
     }
 }
 
