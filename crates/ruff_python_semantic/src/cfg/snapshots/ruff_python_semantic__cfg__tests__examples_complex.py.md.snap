@@ -1,0 +1,282 @@
+---
+source: crates/ruff_python_semantic/src/cfg/mod.rs
+description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
+---
+## Function 0
+### Source
+```python
+def complicated_control_flow():
+    result = []
+    outer_counter = 0
+    continue_loop = True
+
+    while continue_loop:
+        # Case 1: When outer_counter is divisible by 4
+        if outer_counter % 4 == 0:
+            inner_counter = outer_counter
+            # A nested while loop with its own control flow
+            while inner_counter < outer_counter + 5:
+                if inner_counter % 2 == 0:
+                    result.append(f"Outer {outer_counter}: Even inner {inner_counter}")
+                else:
+                    result.append(f"Outer {outer_counter}: Odd inner {inner_counter}")
+                inner_counter += 1
+
+        # Case 2: When outer_counter gives remainder 1 modulo 4
+        elif outer_counter % 4 == 1:
+            # A for loop with try/except handling
+            for i in range(3):
+                try:
+                    # Avoid division by zero using a fallback value
+                    divisor = i if i != 0 else 1
+                    computed_value = (outer_counter ** 2) / divisor
+                    if computed_value > 10:
+                        result.append(f"Outer {outer_counter}, i {i}: High value {computed_value}")
+                    else:
+                        result.append(f"Outer {outer_counter}, i {i}: Low value {computed_value}")
+                except Exception as e:
+                    result.append(f"Outer {outer_counter}, i {i}: Error {str(e)}")
+
+        # Case 3: All other cases
+        else:
+            nested_flag = False
+            # A nested while loop with internal conditional adjustments
+            while not nested_flag:
+                result.append(f"Nested loop at outer {outer_counter}")
+                outer_counter += 1  # Modify outer_counter within nested loop
+                # Exit condition based on the updated outer_counter
+                if outer_counter % 3 == 0 or outer_counter > 20:
+                    nested_flag = True
+                    # Optionally break out of the main loop if outer_counter is high enough
+                    if outer_counter > 20:
+                        continue_loop = False
+
+        outer_counter += 1
+        # Terminate the main loop if outer_counter exceeds a threshold
+        if outer_counter > 15:
+            continue_loop = False
+
+    return result
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["result = []
+outer_counter = 0
+continue_loop = True"]
+	node1((("EXIT")))
+	node2["return result"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
+	node5["outer_counter += 1
+SWITCH"]
+	node6["inner_counter = outer_counter"]
+	node7["LOOP GUARD"]
+	node8["nested_flag = False"]
+	node9["LOOP GUARD"]
+	node10["SWITCH"]
+	node11["inner_counter += 1"]
+	node12["result.append(f#quot;Outer {outer_counter}: Even inner {inner_counter}#quot;)"]
+	node13["result.append(f#quot;Outer {outer_counter}: Odd inner {inner_counter}#quot;)"]
+	node14["EMPTY"]
+	node15["divisor = i if i != 0 else 1
+computed_value = (outer_counter ** 2) / divisor"]
+	node16["EXCEPTION DISPATCH"]
+	node17["result.append(f#quot;Outer {outer_counter}, i {i}: High value {computed_value}#quot;)"]
+	node18["result.append(f#quot;Outer {outer_counter}, i {i}: Low value {computed_value}#quot;)"]
+	node19["result.append(f#quot;Outer {outer_counter}, i {i}: Error {str(e)}#quot;)"]
+	node20["LOOP GUARD"]
+	node21["result.append(f#quot;Nested loop at outer {outer_counter}#quot;)
+outer_counter += 1
+SWITCH"]
+	node22["nested_flag = True
+SWITCH"]
+	node23["continue_loop = False"]
+	node24["continue_loop = False"]
+	node0-->node3
+	node2==>node1
+	node3-->|"continue_loop"|node4
+	node3-->|"Else"|node2
+	node4-->|"outer_counter % 4 == 0"|node6
+	node4-->|"outer_counter % 4 == 1"|node7
+	node4-->|"Else"|node8
+	node5-->|"outer_counter > 15"|node24
+	node5-->|"Else"|node3
+	node6-->node9
+	node7-->|"for i in range(3)"|node14
+	node7-->|"Else"|node5
+	node8-->node20
+	node9-->|"inner_counter < outer_counter + 5"|node10
+	node9-->|"Else"|node5
+	node10-->|"inner_counter % 2 == 0"|node12
+	node10-->|"Else"|node13
+	node11-->node9
+	node12-->node11
+	node13-->node11
+	node14-->node15
+	node15-->|"computed_value > 10"|node17
+	node15-->|"Else"|node18
+	node16-->|"except Exception"|node19
+	node16-->|"Else"|node7
+	node17-->node16
+	node18-->node16
+	node19-->node7
+	node20-->|"not nested_flag"|node21
+	node20-->|"Else"|node5
+	node21-->|"outer_counter % 3 == 0 or outer_counter > 20"|node22
+	node21-->|"Else"|node20
+	node22-->|"outer_counter > 20"|node23
+	node22-->|"Else"|node20
+	node23-->node20
+	node24-->node3
+```
+
+## Function 1
+### Source
+```python
+def nested_try_except_finally_example():
+    output = []
+    for i in range(10):
+        output.append(f"Iteration {i} start")
+        try:
+            output.append("Outer try block started")
+            try:
+                output.append("  Inner try block started")
+                if i == 1:
+                    output.append("  i==1: triggering continue (from inner try)")
+                    # The inner finally (and then outer finally) will still run before continuing.
+                    continue
+                elif i == 2:
+                    output.append("  i==2: raising RuntimeError to be caught in inner except")
+                    raise RuntimeError("Error triggered at i==2")
+                elif i == 3:
+                    output.append("  i==3: processing normally in inner try")
+                elif i == 4:
+                    output.append("  i==4: entering nested try block")
+                    try:
+                        output.append("    Nested try block started")
+                        # For demonstration, raise a KeyError in the nested try
+                        if i % 2 == 0:
+                            output.append("    Nested try: raising KeyError")
+                            raise KeyError("Nested error at i==4")
+                    except KeyError as ke:
+                        output.append(f"    Nested except caught: {ke}")
+                        # Use continue here to jump to the next iteration of the outer loop.
+                        continue
+                    finally:
+                        output.append("    Nested finally executed")
+                elif i == 5:
+                    output.append("  i==5: triggering return from inner try")
+                    return output  # Return jump out of the function.
+                elif i == 6:
+                    output.append("  i==6: triggering break from inner try")
+                    break  # Break out of the for-loop.
+                else:
+                    output.append(f"  Processing i=={i} normally in inner try")
+                output.append("  Inner try block finished normally")
+            except RuntimeError as re:
+                output.append(f"  Inner except caught RuntimeError: {re}")
+                # Continue to the next iteration of the for-loop after handling the error.
+                continue
+            finally:
+                output.append("  Inner finally executed")
+            output.append("Outer try block finished normally")
+        except Exception as e:
+            output.append(f"Outer except caught: {e}")
+        finally:
+            output.append("Outer finally executed")
+        output.append(f"Iteration {i} end")
+    output.append("Loop finished")
+    return output
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["output = []"]
+	node1((("EXIT")))
+	node2["output.append(#quot;Loop finished#quot;)
+return output"]
+	node3["LOOP GUARD"]
+	node4["output.append(f#quot;Iteration {i} start#quot;)"]
+	node5["output.append(#quot;Outer try block started#quot;)"]
+	node6["output.append(f#quot;Iteration {i} end#quot;)"]
+	node7["EXCEPTION DISPATCH"]
+	node8["output.append(#quot;Outer finally executed#quot;)"]
+	node9["RECOVERY"]
+	node10["output.append(#quot;  Inner try block started#quot;)"]
+	node11["output.append(#quot;Outer try block finished normally#quot;)"]
+	node12["EXCEPTION DISPATCH"]
+	node13["output.append(#quot;  Inner finally executed#quot;)"]
+	node14["RECOVERY"]
+	node15["output.append(#quot;  Inner try block finished normally#quot;)"]
+	node16["output.append(#quot;  i==1: triggering continue (from inner try)#quot;)
+continue"]
+	node17["output.append(#quot;  i==2: raising RuntimeError to be caught in inner except#quot;)
+raise RuntimeError(#quot;Error triggered at i==2#quot;)"]
+	node18["output.append(#quot;  i==3: processing normally in inner try#quot;)"]
+	node19["output.append(#quot;  i==4: entering nested try block#quot;)"]
+	node20["output.append(#quot;  i==5: triggering return from inner try#quot;)
+return output"]
+	node21["output.append(#quot;  i==6: triggering break from inner try#quot;)
+break"]
+	node22["output.append(f#quot;  Processing i=={i} normally in inner try#quot;)"]
+	node23["output.append(#quot;    Nested try block started#quot;)"]
+	node24["EXCEPTION DISPATCH"]
+	node25["output.append(#quot;    Nested finally executed#quot;)"]
+	node26["RECOVERY"]
+	node27["output.append(#quot;    Nested try: raising KeyError#quot;)
+raise KeyError(#quot;Nested error at i==4#quot;)"]
+	node28["output.append(f#quot;    Nested except caught: {ke}#quot;)
+continue"]
+	node29["output.append(f#quot;  Inner except caught RuntimeError: {re}#quot;)
+continue"]
+	node30["output.append(f#quot;Outer except caught: {e}#quot;)"]
+	node0-->node3
+	node2==>node1
+	node3-->|"for i in range(10)"|node4
+	node3-->|"Else"|node2
+	node4-->node5
+	node5-->node10
+	node6-->node3
+	node7-->|"except Exception"|node30
+	node7-->|"Else"|node8
+	node8-->node9
+	node9-->|"Deferred"|node3
+	node9-->|"Deferred"|node3
+	node9==>|"Deferred"|node1
+	node9-->|"Deferred"|node2
+	node9-->|"Deferred"|node3
+	node9-->node6
+	node10-->|"i == 1"|node16
+	node10-->|"i == 2"|node17
+	node10-->|"i == 3"|node18
+	node10-->|"i == 4"|node19
+	node10-->|"i == 5"|node20
+	node10-->|"i == 6"|node21
+	node10-->|"Else"|node22
+	node11-->node7
+	node12-->|"except RuntimeError"|node29
+	node12-->|"Else"|node13
+	node13-->node14
+	node14-->node11
+	node15-->node12
+	node16-->node15
+	node17-->node15
+	node18-->node15
+	node19-->node23
+	node20-->node15
+	node21-->node15
+	node22-->node15
+	node23-->|"i % 2 == 0"|node27
+	node23-->|"Else"|node24
+	node24-->|"except KeyError"|node28
+	node24-->|"Else"|node25
+	node25-->node26
+	node26-->node15
+	node27-->node24
+	node28-->node25
+	node29-->node13
+	node30-->node8
+```
