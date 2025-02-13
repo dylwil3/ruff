@@ -50,6 +50,7 @@ pub enum BlockKind {
     Generic,
     LoopGuard,
     ExceptionDispatch,
+    Recovery,
     Terminal,
 }
 
@@ -243,6 +244,13 @@ impl<'stmt> CFGBuilder<'stmt> for CFGConstructor<'stmt> {
 
     fn pop_try_context(&mut self) -> Option<TryContext> {
         self.try_contexts.pop()
+    }
+
+    fn new_recovery(&mut self) -> Self::BasicBlock {
+        self.cfg.blocks.push(BlockData {
+            kind: BlockKind::Recovery, // New kind
+            ..BlockData::default()
+        })
     }
 }
 

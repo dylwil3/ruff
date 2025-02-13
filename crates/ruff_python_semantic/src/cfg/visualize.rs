@@ -253,6 +253,7 @@ impl<'stmt> MermaidGraph<'stmt> for CFGWithSource<'stmt> {
                 }
             }
             BlockKind::ExceptionDispatch => "EXCEPTION DISPATCH".to_string(),
+            BlockKind::Recovery => "RECOVERY".to_string(),
         };
 
         MermaidNode::with_content(content)

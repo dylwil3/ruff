@@ -65,6 +65,28 @@ def func():
         print("else")
 
 
+def func():
+    try:
+        print("try")
+    finally:
+        print("finally")
+
+def func():
+    x = 1
+    try:
+        print("try")
+    finally:
+        print("finally")
+    x = 2
+        
+
+def func():
+    try:
+        for i in [1,2,3]:
+            foo(i)
+    finally:
+        print("finally")
+
 # def func():
 #     try:
 #         print("try")

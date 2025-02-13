@@ -125,6 +125,8 @@ pub trait CFGBuilder<'stmt> {
     /// of a `try` block.
     fn new_exception_dispatch(&mut self) -> Self::BasicBlock;
 
+    fn new_recovery(&mut self) -> Self::BasicBlock;
+
     /// Adds an outgoing edge from the current block to the target specified in the edge.
     fn add_edge(&mut self, edge: Self::Edge);
 
@@ -460,7 +462,26 @@ pub trait CFGBuilder<'stmt> {
                     let old_exit = self.current_exit();
 
                     match try_context.kind {
-                        TryKind::TryFinally => todo!(),
+                        TryKind::TryFinally => {
+                            let finally_block = self.new_block();
+                            let recovery_block = self.new_recovery();
+
+                            // Process try clause
+                            self.update_exit(finally_block);
+                            self.process_stmts(&stmt_try.body);
+
+                            // Process finally clause
+                            self.move_to(finally_block);
+                            self.set_try_state(TryState::Finally);
+                            self.update_exit(recovery_block);
+                            self.process_stmts(&stmt_try.finalbody);
+
+                            // Process recovery
+                            self.move_to(recovery_block);
+                            self.set_try_state(TryState::Recovery);
+                            self.update_exit(next_block);
+                            self.resolve_deferred_jumps();
+                        }
                         TryKind::TryExcept => {
                             let dispatch_block = self.new_exception_dispatch();
                             self.update_exit(dispatch_block);
@@ -637,6 +658,9 @@ pub trait CFGBuilder<'stmt> {
         if let Some(ctxt) = self.last_mut_try_context() {
             ctxt.state = state;
         }
+    }
+    fn resolve_deferred_jumps(&mut self) {
+        self.add_edge(Self::Edge::always(self.current_exit()));
     }
 
     fn build(self) -> Self::Graph;

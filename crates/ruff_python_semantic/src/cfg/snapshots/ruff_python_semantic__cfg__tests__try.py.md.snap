@@ -247,3 +247,85 @@ flowchart TD
 	node6==>node1
 	node7==>node1
 ```
+
+## Function 8
+### Source
+```python
+def func():
+    try:
+        print("try")
+    finally:
+        print("finally")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["EMPTY"]
+	node1((("EXIT")))
+	node2["print(#quot;try#quot;)"]
+	node3["print(#quot;finally#quot;)"]
+	node4["RECOVERY"]
+	node0-->node2
+	node2-->node3
+	node3-->node4
+	node4==>node1
+```
+
+## Function 9
+### Source
+```python
+def func():
+    x = 1
+    try:
+        print("try")
+    finally:
+        print("finally")
+    x = 2
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["x = 1"]
+	node1((("EXIT")))
+	node2["print(#quot;try#quot;)"]
+	node3["x = 2"]
+	node4["print(#quot;finally#quot;)"]
+	node5["RECOVERY"]
+	node0-->node2
+	node2-->node4
+	node3==>node1
+	node4-->node5
+	node5-->node3
+```
+
+## Function 10
+### Source
+```python
+def func():
+    try:
+        for i in [1,2,3]:
+            foo(i)
+    finally:
+        print("finally")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["EMPTY"]
+	node1((("EXIT")))
+	node2["EMPTY"]
+	node3["print(#quot;finally#quot;)"]
+	node4["RECOVERY"]
+	node5["LOOP GUARD"]
+	node6["foo(i)"]
+	node0-->node2
+	node2-->node5
+	node3-->node4
+	node4==>node1
+	node5-->|"for i in [1,2,3]"|node6
+	node5-->|"Else"|node3
+	node6-->node5
+```
