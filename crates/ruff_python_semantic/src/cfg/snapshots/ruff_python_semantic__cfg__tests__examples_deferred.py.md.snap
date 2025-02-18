@@ -1,0 +1,150 @@
+---
+source: crates/ruff_python_semantic/src/cfg/mod.rs
+description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
+---
+## Function 0
+### Source
+```python
+def func():
+    try:
+        return 2
+    finally:
+        print("hey!")
+    x = 1
+    return 7
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 2"]
+	node3["x = 1
+return 7"]
+	node4["print(#quot;hey!#quot;)"]
+	node5["RECOVERY"]
+	node0-->node2
+	node2-->node4
+	node3==>node1
+	node4-->node5
+	node5==>|"Deferred"|node1
+	node5-->node3
+```
+
+## Function 1
+### Source
+```python
+def func():
+    try:
+        return 2
+    finally:
+        print("hey!")
+        return 3
+    x = 1
+    return 7
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 2"]
+	node3["x = 1
+return 7"]
+	node4["print(#quot;hey!#quot;)
+return 3"]
+	node5["RECOVERY"]
+	node0-->node2
+	node2-->node4
+	node3==>node1
+	node4==>node1
+	node5==>|"Deferred"|node1
+	node5-->node3
+```
+
+## Function 2
+### Source
+```python
+def func():
+    while True:
+        try:
+            break
+        finally:
+            continue
+        print("out of the try")
+    print("out of the loop")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;out of the loop#quot;)"]
+	node3["LOOP GUARD"]
+	node4["EMPTY"]
+	node5["break"]
+	node6["print(#quot;out of the try#quot;)"]
+	node7["continue"]
+	node8["RECOVERY"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->node5
+	node5-->node7
+	node6-->node3
+	node7-->node3
+	node8-->|"Deferred"|node2
+	node8-->node6
+```
+
+## Function 3
+### Source
+```python
+def func():
+    while True:
+        try:
+            try:
+                break
+            finally:
+                print("before break")
+                continue
+        finally:
+            print("before continue")
+            return
+    print("unreachable")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;unreachable#quot;)"]
+	node3["LOOP GUARD"]
+	node4["EMPTY"]
+	node5["ENTER TRY"]
+	node6["print(#quot;before continue#quot;)
+return"]
+	node7["RECOVERY"]
+	node8["break"]
+	node9["print(#quot;before break#quot;)
+continue"]
+	node10["RECOVERY"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->node5
+	node5-->node8
+	node6==>node1
+	node7-->|"Deferred"|node2
+	node7-->|"Deferred"|node3
+	node7-->node3
+	node8-->node9
+	node9-->node10
+	node10-->node6
+```

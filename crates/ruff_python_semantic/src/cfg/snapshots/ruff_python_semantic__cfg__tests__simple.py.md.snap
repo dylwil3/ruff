@@ -1,0 +1,123 @@
+---
+source: crates/ruff_python_semantic/src/cfg/mod.rs
+description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
+---
+## Function 0
+### Source
+```python
+def func():
+    pass
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["pass"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 1
+### Source
+```python
+def func():
+    return
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["return"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 2
+### Source
+```python
+def func():
+    return 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["return 1"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 3
+### Source
+```python
+def func():
+    return 1
+    return "unreachable"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["return 1"]
+	node1((("EXIT")))
+	node2["return #quot;unreachable#quot;"]
+	node0==>node1
+	node2==>node1
+```
+
+## Function 4
+### Source
+```python
+def func():
+    i = 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["i = 0"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 5
+### Source
+```python
+def func():
+    i = 0
+    i += 2
+    return i
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["i = 0
+i += 2
+return i"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 6
+### Source
+```python
+def func():
+    def inner():
+        x = 0
+        return x
+    x = 1
+    return x
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["def inner():
+        x = 0
+        return x
+x = 1
+return x"]
+	node1((("EXIT")))
+	node0==>node1
+```
