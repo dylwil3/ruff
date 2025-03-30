@@ -1,0 +1,550 @@
+---
+source: crates/ruff_python_semantic/src/cfg/mod.rs
+description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
+---
+## Function 0
+### Source
+```python
+def func():
+    while False:
+        return "unreachable"
+    return 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node3["LOOP GUARD"]
+	node4["return #quot;unreachable#quot;"]
+	node0-->node3
+	node2==>node1
+	node3-->|"False"|node4
+	node3-->|"Else"|node2
+	node4==>node1
+```
+
+## Function 1
+### Source
+```python
+def func():
+    while False:
+        return "unreachable"
+    else:
+        return 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["return #quot;unreachable#quot;"]
+	node4["return 1"]
+	node0-->node2
+	node2-->|"False"|node3
+	node2-->|"Else"|node4
+	node3==>node1
+	node4==>node1
+```
+
+## Function 2
+### Source
+```python
+def func():
+    while False:
+        return "unreachable"
+    else:
+        return 1
+    return "also unreachable"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return #quot;also unreachable#quot;"]
+	node3["LOOP GUARD"]
+	node4["return #quot;unreachable#quot;"]
+	node5["return 1"]
+	node0-->node3
+	node2==>node1
+	node3-->|"False"|node4
+	node3-->|"Else"|node5
+	node4==>node1
+	node5==>node1
+```
+
+## Function 3
+### Source
+```python
+def func():
+    while True:
+        return 1
+    return "unreachable"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return #quot;unreachable#quot;"]
+	node3["LOOP GUARD"]
+	node4["return 1"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4==>node1
+```
+
+## Function 4
+### Source
+```python
+def func():
+    while True:
+        return 1
+    else:
+        return "unreachable"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["return 1"]
+	node4["return #quot;unreachable#quot;"]
+	node0-->node2
+	node2-->|"True"|node3
+	node2-->|"Else"|node4
+	node3==>node1
+	node4==>node1
+```
+
+## Function 5
+### Source
+```python
+def func():
+    while True:
+        return 1
+    else:
+        return "unreachable"
+    return "also unreachable"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return #quot;also unreachable#quot;"]
+	node3["LOOP GUARD"]
+	node4["return 1"]
+	node5["return #quot;unreachable#quot;"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node5
+	node4==>node1
+	node5==>node1
+```
+
+## Function 6
+### Source
+```python
+def func():
+    i = 0
+    while False:
+        i += 1
+    return i
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["i = 0"]
+	node1((("EXIT")))
+	node2["return i"]
+	node3["LOOP GUARD"]
+	node4["i += 1"]
+	node0-->node3
+	node2==>node1
+	node3-->|"False"|node4
+	node3-->|"Else"|node2
+	node4-->node3
+```
+
+## Function 7
+### Source
+```python
+def func():
+    i = 0
+    while True:
+        i += 1
+    return i
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["i = 0"]
+	node1((("EXIT")))
+	node2["return i"]
+	node3["LOOP GUARD"]
+	node4["i += 1"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->node3
+```
+
+## Function 8
+### Source
+```python
+def func():
+    while True:
+        pass
+    return 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node3["LOOP GUARD"]
+	node4["pass"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->node3
+```
+
+## Function 9
+### Source
+```python
+def func():
+    i = 0
+    while True:
+        if True:
+            print("ok")
+        i += 1
+    return i
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["i = 0"]
+	node1((("EXIT")))
+	node2["return i"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
+	node5["i += 1"]
+	node6["print(#quot;ok#quot;)"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->|"True"|node6
+	node4-->|"Else"|node5
+	node5-->node3
+	node6-->node5
+```
+
+## Function 10
+### Source
+```python
+def func():
+    i = 0
+    while True:
+        if False:
+            print("ok")
+        i += 1
+    return i
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["i = 0"]
+	node1((("EXIT")))
+	node2["return i"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
+	node5["i += 1"]
+	node6["print(#quot;ok#quot;)"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->|"False"|node6
+	node4-->|"Else"|node5
+	node5-->node3
+	node6-->node5
+```
+
+## Function 11
+### Source
+```python
+def func():
+    while True:
+        if True:
+            return 1
+    return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 0"]
+	node3["LOOP GUARD"]
+	node4["SWITCH"]
+	node5["return 1"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->|"True"|node5
+	node4-->|"Else"|node3
+	node5==>node1
+```
+
+## Function 12
+### Source
+```python
+def func():
+    while True:
+        continue
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["continue"]
+	node0-->node2
+	node2-->|"True"|node3
+	node2==>|"Else"|node1
+	node3-->node2
+```
+
+## Function 13
+### Source
+```python
+def func():
+    while False:
+        continue
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["continue"]
+	node0-->node2
+	node2-->|"False"|node3
+	node2==>|"Else"|node1
+	node3-->node2
+```
+
+## Function 14
+### Source
+```python
+def func():
+    while True:
+        break
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["break"]
+	node0-->node2
+	node2-->|"True"|node3
+	node2==>|"Else"|node1
+	node3==>node1
+```
+
+## Function 15
+### Source
+```python
+def func():
+    while False:
+        break
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["break"]
+	node0-->node2
+	node2-->|"False"|node3
+	node2==>|"Else"|node1
+	node3==>node1
+```
+
+## Function 16
+### Source
+```python
+def func():
+    while True:
+        if True:
+            continue
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["SWITCH"]
+	node4["continue"]
+	node0-->node2
+	node2-->|"True"|node3
+	node2==>|"Else"|node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->node2
+```
+
+## Function 17
+### Source
+```python
+def func():
+    while True:
+        if True:
+            break
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["SWITCH"]
+	node4["break"]
+	node0-->node2
+	node2-->|"True"|node3
+	node2==>|"Else"|node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4==>node1
+```
+
+## Function 18
+### Source
+```python
+def func():
+    while True:
+        x = 0
+        x = 1
+        break
+        x = 2
+    x = 3
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["x = 3"]
+	node3["LOOP GUARD"]
+	node4["x = 0
+x = 1
+break"]
+	node5["x = 2"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->node2
+	node5-->node3
+```
+
+## Function 19
+### Source
+```python
+def func():
+    while True:
+        x = 0
+        x = 1
+        continue
+        x = 2
+    x = 3
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["x = 3"]
+	node3["LOOP GUARD"]
+	node4["x = 0
+x = 1
+continue"]
+	node5["x = 2"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4-->node3
+	node5-->node3
+```
+
+## Function 20
+### Source
+```python
+def func():
+    while True:
+        x = 0
+        x = 1
+        return
+        x = 2
+    x = 3
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["x = 3"]
+	node3["LOOP GUARD"]
+	node4["x = 0
+x = 1
+return"]
+	node5["x = 2"]
+	node0-->node3
+	node2==>node1
+	node3-->|"True"|node4
+	node3-->|"Else"|node2
+	node4==>node1
+	node5-->node3
+```

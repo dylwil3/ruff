@@ -1,0 +1,503 @@
+---
+source: crates/ruff_python_semantic/src/cfg/mod.rs
+description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
+---
+## Function 0
+### Source
+```python
+def func():
+    if False:
+        return 0
+    return 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node3["return 0"]
+	node0-->|"False"|node3
+	node0-->|"Else"|node2
+	node2==>node1
+	node3==>node1
+```
+
+## Function 1
+### Source
+```python
+def func():
+    if True:
+        return 1
+    return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 0"]
+	node3["return 1"]
+	node0-->|"True"|node3
+	node0-->|"Else"|node2
+	node2==>node1
+	node3==>node1
+```
+
+## Function 2
+### Source
+```python
+def func():
+    if False:
+        return 0
+    else:
+        return 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 0"]
+	node3["return 1"]
+	node0-->|"False"|node2
+	node0-->|"Else"|node3
+	node2==>node1
+	node3==>node1
+```
+
+## Function 3
+### Source
+```python
+def func():
+    if True:
+        return 1
+    else:
+        return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node3["return 0"]
+	node0-->|"True"|node2
+	node0-->|"Else"|node3
+	node2==>node1
+	node3==>node1
+```
+
+## Function 4
+### Source
+```python
+def func():
+    if False:
+        return 0
+    else:
+        return 1
+    return "unreachable"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return #quot;unreachable#quot;"]
+	node3["return 0"]
+	node4["return 1"]
+	node0-->|"False"|node3
+	node0-->|"Else"|node4
+	node2==>node1
+	node3==>node1
+	node4==>node1
+```
+
+## Function 5
+### Source
+```python
+def func():
+    if True:
+        return 1
+    else:
+        return 0
+    return "unreachable"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return #quot;unreachable#quot;"]
+	node3["return 1"]
+	node4["return 0"]
+	node0-->|"True"|node3
+	node0-->|"Else"|node4
+	node2==>node1
+	node3==>node1
+	node4==>node1
+```
+
+## Function 6
+### Source
+```python
+def func():
+    if True:
+        if True:
+            return 1
+        return 2
+    else:
+        return 3
+    return "unreachable2"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return #quot;unreachable2#quot;"]
+	node3["SWITCH"]
+	node4["return 3"]
+	node5["return 2"]
+	node6["return 1"]
+	node0-->|"True"|node3
+	node0-->|"Else"|node4
+	node2==>node1
+	node3-->|"True"|node6
+	node3-->|"Else"|node5
+	node4==>node1
+	node5==>node1
+	node6==>node1
+```
+
+## Function 7
+### Source
+```python
+def func():
+    if False:
+        return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 0"]
+	node0-->|"False"|node2
+	node0==>|"Else"|node1
+	node2==>node1
+```
+
+## Function 8
+### Source
+```python
+def func():
+    if True:
+        return 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node0-->|"True"|node2
+	node0==>|"Else"|node1
+	node2==>node1
+```
+
+## Function 9
+### Source
+```python
+def func():
+    if True:
+        return 1
+    elif False:
+        return 2
+    else:
+        return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node3["return 2"]
+	node4["return 0"]
+	node0-->|"True"|node2
+	node0-->|"False"|node3
+	node0-->|"Else"|node4
+	node2==>node1
+	node3==>node1
+	node4==>node1
+```
+
+## Function 10
+### Source
+```python
+def func():
+    if False:
+        return 1
+    elif True:
+        return 2
+    else:
+        return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node3["return 2"]
+	node4["return 0"]
+	node0-->|"False"|node2
+	node0-->|"True"|node3
+	node0-->|"Else"|node4
+	node2==>node1
+	node3==>node1
+	node4==>node1
+```
+
+## Function 11
+### Source
+```python
+def func():
+    if True:
+        if False:
+            return 0
+        elif True:
+            return 1
+        else:
+            return 2
+        return 3
+    elif True:
+        return 4
+    else:
+        return 5
+    return 6
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 6"]
+	node3["SWITCH"]
+	node4["return 4"]
+	node5["return 5"]
+	node6["return 3"]
+	node7["return 0"]
+	node8["return 1"]
+	node9["return 2"]
+	node0-->|"True"|node3
+	node0-->|"True"|node4
+	node0-->|"Else"|node5
+	node2==>node1
+	node3-->|"False"|node7
+	node3-->|"True"|node8
+	node3-->|"Else"|node9
+	node4==>node1
+	node5==>node1
+	node6==>node1
+	node7==>node1
+	node8==>node1
+	node9==>node1
+```
+
+## Function 12
+### Source
+```python
+def func():
+    if False:
+        return "unreached"
+    elif False:
+        return "also unreached"
+    return "reached"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return #quot;reached#quot;"]
+	node3["return #quot;unreached#quot;"]
+	node4["return #quot;also unreached#quot;"]
+	node0-->|"False"|node3
+	node0-->|"False"|node4
+	node0-->|"Else"|node2
+	node2==>node1
+	node3==>node1
+	node4==>node1
+```
+
+## Function 13
+### Source
+```python
+def func(self, obj: BytesRep) -> bytes:
+    data = obj["data"]
+
+    if isinstance(data, str):
+        return base64.b64decode(data)
+    elif isinstance(data, Buffer):
+        buffer = data
+    else:
+        id = data["id"]
+
+        if id in self._buffers:
+            buffer = self._buffers[id]
+        else:
+            self.error(f"can't resolve buffer '{id}'")
+
+    return buffer.data
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["data = obj[#quot;data#quot;]
+SWITCH"]
+	node1((("EXIT")))
+	node2["return buffer.data"]
+	node3["return base64.b64decode(data)"]
+	node4["buffer = data"]
+	node5["id = data[#quot;id#quot;]
+SWITCH"]
+	node6["buffer = self._buffers[id]"]
+	node7["self.error(f#quot;can't resolve buffer '{id}'#quot;)"]
+	node0-->|"isinstance(data, str)"|node3
+	node0-->|"isinstance(data, Buffer)"|node4
+	node0-->|"Else"|node5
+	node2==>node1
+	node3==>node1
+	node4-->node2
+	node5-->|"id in self._buffers"|node6
+	node5-->|"Else"|node7
+	node6-->node2
+	node7-->node2
+```
+
+## Function 14
+### Source
+```python
+def func(x):
+    if x == 1:
+        return 1
+    elif False:
+        return 2
+    elif x == 3:
+        return 3
+    elif True:
+        return 4
+    elif x == 5:
+        return 5
+    elif x == 6:
+        return 6
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node3["return 2"]
+	node4["return 3"]
+	node5["return 4"]
+	node6["return 5"]
+	node7["return 6"]
+	node0-->|"x == 1"|node2
+	node0-->|"False"|node3
+	node0-->|"x == 3"|node4
+	node0-->|"True"|node5
+	node0-->|"x == 5"|node6
+	node0-->|"x == 6"|node7
+	node0==>|"Else"|node1
+	node2==>node1
+	node3==>node1
+	node4==>node1
+	node5==>node1
+	node6==>node1
+	node7==>node1
+```
+
+## Function 15
+### Source
+```python
+def func(x):
+    i = 0
+    if x:
+        i += 2
+    j = 1
+    if not x:
+        j -=3
+        return 17
+    k = i +j
+    return k
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["i = 0
+SWITCH"]
+	node1((("EXIT")))
+	node2["j = 1
+SWITCH"]
+	node3["i += 2"]
+	node4["k = i +j
+return k"]
+	node5["j -=3
+return 17"]
+	node0-->|"x"|node3
+	node0-->|"Else"|node2
+	node2-->|"not x"|node5
+	node2-->|"Else"|node4
+	node3-->node2
+	node4==>node1
+	node5==>node1
+```
+
+## Function 16
+### Source
+```python
+def func(cond,cond2,cond3):
+    if cond:
+        return 0
+    else:
+        if cond3:
+            c()
+    return 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node3["return 0"]
+	node4["SWITCH"]
+	node5["c()"]
+	node0-->|"cond"|node3
+	node0-->|"Else"|node4
+	node2==>node1
+	node3==>node1
+	node4-->|"cond3"|node5
+	node4-->|"Else"|node2
+	node5-->node2
+```

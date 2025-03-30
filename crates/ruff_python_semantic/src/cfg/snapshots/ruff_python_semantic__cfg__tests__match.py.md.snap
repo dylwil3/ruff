@@ -1,0 +1,407 @@
+---
+source: crates/ruff_python_semantic/src/cfg/mod.rs
+description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
+---
+## Function 0
+### Source
+```python
+def func(status):
+    match status:
+        case _:
+            return 0
+    return "unreachable"
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return #quot;unreachable#quot;"]
+	node3["return 0"]
+	node0-->|"status matches _"|node3
+	node2==>node1
+	node3==>node1
+```
+
+## Function 1
+### Source
+```python
+def func(status):
+    match status:
+        case 1:
+            return 1
+    return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 0"]
+	node3["return 1"]
+	node0-->|"status matches 1"|node3
+	node0-->|"Else"|node2
+	node2==>node1
+	node3==>node1
+```
+
+## Function 2
+### Source
+```python
+def func(status):
+    match status:
+        case 1:
+            return 1
+        case _:
+            return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 1"]
+	node3["return 0"]
+	node0-->|"status matches 1"|node2
+	node0-->|"status matches _"|node3
+	node2==>node1
+	node3==>node1
+```
+
+## Function 3
+### Source
+```python
+def func(status):
+    match status:
+        case 1 | 2 | 3:
+            return 5
+    return 6
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 6"]
+	node3["return 5"]
+	node0-->|"status matches 1 | 2 | 3"|node3
+	node0-->|"Else"|node2
+	node2==>node1
+	node3==>node1
+```
+
+## Function 4
+### Source
+```python
+def func(status):
+    match status:
+        case 1 | 2 | 3:
+            return 5
+        case _:
+            return 10
+    return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 0"]
+	node3["return 5"]
+	node4["return 10"]
+	node0-->|"status matches 1 | 2 | 3"|node3
+	node0-->|"status matches _"|node4
+	node2==>node1
+	node3==>node1
+	node4==>node1
+```
+
+## Function 5
+### Source
+```python
+def func(status):
+    match status:
+        case 0:
+            return 0
+        case 1:
+            return 1
+        case 1:
+            return "1 again"
+        case _:
+            return 3
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["return 0"]
+	node3["return 1"]
+	node4["return #quot;1 again#quot;"]
+	node5["return 3"]
+	node0-->|"status matches 0"|node2
+	node0-->|"status matches 1"|node3
+	node0-->|"status matches 1"|node4
+	node0-->|"status matches _"|node5
+	node2==>node1
+	node3==>node1
+	node4==>node1
+	node5==>node1
+```
+
+## Function 6
+### Source
+```python
+def func(status):
+    i = 0
+    match status, i:
+        case _, _:
+            return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["i = 0"]
+	node1((("EXIT")))
+	node2["return 0"]
+	node0-->|"status, i matches _, _"|node2
+	node0==>|"Else"|node1
+	node2==>node1
+```
+
+## Function 7
+### Source
+```python
+def func(status):
+    i = 0
+    match status, i:
+        case _, 0:
+            return 0
+        case _, 2:
+            return 0
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["i = 0"]
+	node1((("EXIT")))
+	node2["return 0"]
+	node3["return 0"]
+	node0-->|"status, i matches _, 0"|node2
+	node0-->|"status, i matches _, 2"|node3
+	node0==>|"Else"|node1
+	node2==>node1
+	node3==>node1
+```
+
+## Function 8
+### Source
+```python
+def where_is(point):
+    class Point:
+        x: int
+        y: int
+
+    match point:
+        case Point(x=0, y=0):
+            print("Origin")
+        case Point(x=0, y=y):
+            print(f"Y={y}")
+        case Point(x=x, y=0):
+            print(f"X={x}")
+        case Point():
+            print("Somewhere else")
+        case _:
+            print("Not a point")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["class Point:
+        x: int
+        y: int"]
+	node1((("EXIT")))
+	node2["print(#quot;Origin#quot;)"]
+	node3["print(f#quot;Y={y}#quot;)"]
+	node4["print(f#quot;X={x}#quot;)"]
+	node5["print(#quot;Somewhere else#quot;)"]
+	node6["print(#quot;Not a point#quot;)"]
+	node0-->|"point matches Point(x=0, y=0)"|node2
+	node0-->|"point matches Point(x=0, y=y)"|node3
+	node0-->|"point matches Point(x=x, y=0)"|node4
+	node0-->|"point matches Point()"|node5
+	node0-->|"point matches _"|node6
+	node2==>node1
+	node3==>node1
+	node4==>node1
+	node5==>node1
+	node6==>node1
+```
+
+## Function 9
+### Source
+```python
+def func(points):
+    match points:
+        case []:
+            print("No points")
+        case [Point(0, 0)]:
+            print("The origin")
+        case [Point(x, y)]:
+            print(f"Single point {x}, {y}")
+        case [Point(0, y1), Point(0, y2)]:
+            print(f"Two on the Y axis at {y1}, {y2}")
+        case _:
+            print("Something else")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;No points#quot;)"]
+	node3["print(#quot;The origin#quot;)"]
+	node4["print(f#quot;Single point {x}, {y}#quot;)"]
+	node5["print(f#quot;Two on the Y axis at {y1}, {y2}#quot;)"]
+	node6["print(#quot;Something else#quot;)"]
+	node0-->|"points matches []"|node2
+	node0-->|"points matches [Point(0, 0)]"|node3
+	node0-->|"points matches [Point(x, y)]"|node4
+	node0-->|"points matches [Point(0, y1), Point(0, y2)]"|node5
+	node0-->|"points matches _"|node6
+	node2==>node1
+	node3==>node1
+	node4==>node1
+	node5==>node1
+	node6==>node1
+```
+
+## Function 10
+### Source
+```python
+def func(point):
+    match point:
+        case Point(x, y) if x == y:
+            print(f"Y=X at {x}")
+        case Point(x, y):
+            print(f"Not on the diagonal")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(f#quot;Y=X at {x}#quot;)"]
+	node3["print(f#quot;Not on the diagonal#quot;)"]
+	node0-->|"point matches Point(x, y)"|node2
+	node0-->|"point matches Point(x, y)"|node3
+	node0==>|"Else"|node1
+	node2==>node1
+	node3==>node1
+```
+
+## Function 11
+### Source
+```python
+def func():
+    from enum import Enum
+    class Color(Enum):
+        RED = 'red'
+        GREEN = 'green'
+        BLUE = 'blue'
+
+    color = Color(input("Enter your choice of 'red', 'blue' or 'green': "))
+
+    match color:
+        case Color.RED:
+            print("I see red!")
+        case Color.GREEN:
+            print("Grass is green")
+        case Color.BLUE:
+            print("I'm feeling the blues :(")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["from enum import Enum
+class Color(Enum):
+        RED = 'red'
+        GREEN = 'green'
+        BLUE = 'blue'
+color = Color(input(#quot;Enter your choice of 'red', 'blue' or 'green': #quot;))"]
+	node1((("EXIT")))
+	node2["print(#quot;I see red!#quot;)"]
+	node3["print(#quot;Grass is green#quot;)"]
+	node4["print(#quot;I'm feeling the blues :(#quot;)"]
+	node0-->|"color matches Color.RED"|node2
+	node0-->|"color matches Color.GREEN"|node3
+	node0-->|"color matches Color.BLUE"|node4
+	node0==>|"Else"|node1
+	node2==>node1
+	node3==>node1
+	node4==>node1
+```
+
+## Function 12
+### Source
+```python
+def func():
+    x = 1
+    y = 2
+    match cond:
+        case 1:
+            x += 1
+        case 2:
+            x += 2
+        case 3:
+            return 3
+        case _:
+            match y:
+                case 4:
+                    x += y
+                case 5:
+                    return x+y
+    y += 4
+    return y - x
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["x = 1
+y = 2"]
+	node1((("EXIT")))
+	node2["y += 4
+return y - x"]
+	node3["x += 1"]
+	node4["x += 2"]
+	node5["return 3"]
+	node6["EMPTY"]
+	node7["x += y"]
+	node8["return x+y"]
+	node0-->|"cond matches 1"|node3
+	node0-->|"cond matches 2"|node4
+	node0-->|"cond matches 3"|node5
+	node0-->|"cond matches _"|node6
+	node2==>node1
+	node3-->node2
+	node4-->node2
+	node5==>node1
+	node6-->|"y matches 4"|node7
+	node6-->|"y matches 5"|node8
+	node6-->|"Else"|node2
+	node7-->node2
+	node8==>node1
+```

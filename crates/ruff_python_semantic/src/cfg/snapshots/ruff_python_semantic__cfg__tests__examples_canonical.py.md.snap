@@ -1,0 +1,460 @@
+---
+source: crates/ruff_python_semantic/src/cfg/mod.rs
+description: "This is a Mermaid graph. You can use https://mermaid.live to visualize it as a diagram."
+---
+## Function 0
+### Source
+```python
+def empty():
+    pass
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["pass"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 1
+### Source
+```python
+def single():
+    x = 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["x = 1"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 2
+### Source
+```python
+def several():
+    x = 1
+    foo()
+    x = 2
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["x = 1
+foo()
+x = 2"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 3
+### Source
+```python
+def ifstmt():
+    if cond:
+        print("if")
+    elif cond1:
+        print("elif")
+    else:
+        print("else")
+    print("afterif")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["print(#quot;afterif#quot;)"]
+	node3["print(#quot;if#quot;)"]
+	node4["print(#quot;elif#quot;)"]
+	node5["print(#quot;else#quot;)"]
+	node0-->|"cond"|node3
+	node0-->|"cond1"|node4
+	node0-->|"Else"|node5
+	node2==>node1
+	node3-->node2
+	node4-->node2
+	node5-->node2
+```
+
+## Function 4
+### Source
+```python
+def implicit_else():
+    if cond:
+        print("if")
+    print("next")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["SWITCH"]
+	node1((("EXIT")))
+	node2["print(#quot;next#quot;)"]
+	node3["print(#quot;if#quot;)"]
+	node0-->|"cond"|node3
+	node0-->|"Else"|node2
+	node2==>node1
+	node3-->node2
+```
+
+## Function 5
+### Source
+```python
+def match():
+    match item:
+        case 1:
+            print("first")
+        case 2:
+            print("second")
+    print("aftermatch")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;aftermatch#quot;)"]
+	node3["print(#quot;first#quot;)"]
+	node4["print(#quot;second#quot;)"]
+	node0-->|"item matches 1"|node3
+	node0-->|"item matches 2"|node4
+	node0-->|"Else"|node2
+	node2==>node1
+	node3-->node2
+	node4-->node2
+```
+
+## Function 6
+### Source
+```python
+def match_catchall():
+    match item:
+        case 1:
+            print("first")
+        case 2:
+            print("second")
+        case _:
+            print("catchall")
+    print("aftermatch")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;aftermatch#quot;)"]
+	node3["print(#quot;first#quot;)"]
+	node4["print(#quot;second#quot;)"]
+	node5["print(#quot;catchall#quot;)"]
+	node0-->|"item matches 1"|node3
+	node0-->|"item matches 2"|node4
+	node0-->|"item matches _"|node5
+	node2==>node1
+	node3-->node2
+	node4-->node2
+	node5-->node2
+```
+
+## Function 7
+### Source
+```python
+def forloop():
+    for i in itr:
+        print("body")
+    print("after")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;after#quot;)"]
+	node3["LOOP GUARD"]
+	node4["print(#quot;body#quot;)"]
+	node0-->node3
+	node2==>node1
+	node3-->|"for i in itr"|node4
+	node3-->|"Else"|node2
+	node4-->node3
+```
+
+## Function 8
+### Source
+```python
+def forloop_else():
+    for i in itr:
+        print("body")
+    else:
+        print("else")
+    print("after")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;after#quot;)"]
+	node3["LOOP GUARD"]
+	node4["print(#quot;body#quot;)"]
+	node5["print(#quot;else#quot;)"]
+	node0-->node3
+	node2==>node1
+	node3-->|"for i in itr"|node4
+	node3-->|"Else"|node5
+	node4-->node3
+	node5-->node2
+```
+
+## Function 9
+### Source
+```python
+def whileloop_else():
+    while cond:
+        print("body")
+    else:
+        print("else")
+    print("after")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;after#quot;)"]
+	node3["LOOP GUARD"]
+	node4["print(#quot;body#quot;)"]
+	node5["print(#quot;else#quot;)"]
+	node0-->node3
+	node2==>node1
+	node3-->|"cond"|node4
+	node3-->|"Else"|node5
+	node4-->node3
+	node5-->node2
+```
+
+## Function 10
+### Source
+```python
+def returns():
+    return 1
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["return 1"]
+	node1((("EXIT")))
+	node0==>node1
+```
+
+## Function 11
+### Source
+```python
+def breaks():
+    while cond:
+        break
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["break"]
+	node0-->node2
+	node2-->|"cond"|node3
+	node2==>|"Else"|node1
+	node3==>node1
+```
+
+## Function 12
+### Source
+```python
+def continues():
+    while cond:
+        continue
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["LOOP GUARD"]
+	node3["continue"]
+	node0-->node2
+	node2-->|"cond"|node3
+	node2==>|"Else"|node1
+	node3-->node2
+```
+
+## Function 13
+### Source
+```python
+def try_except():
+    try:
+        print("try")
+    except:
+        print("except")
+    print("after")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;try#quot;)"]
+	node3["print(#quot;after#quot;)"]
+	node4["EXCEPTION DISPATCH"]
+	node5["print(#quot;except#quot;)"]
+	node0-->node2
+	node2-->node4
+	node3==>node1
+	node4-->|"except any exception"|node5
+	node4-->|"Else"|node3
+	node5-->node3
+```
+
+## Function 14
+### Source
+```python
+def try_except_handlers():
+    try:
+        print("try")
+    except ValueError:
+        print("value error")
+    except TypeError:
+        print("type error")
+    print("after")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;try#quot;)"]
+	node3["print(#quot;after#quot;)"]
+	node4["EXCEPTION DISPATCH"]
+	node5["print(#quot;value error#quot;)"]
+	node6["print(#quot;type error#quot;)"]
+	node0-->node2
+	node2-->node4
+	node3==>node1
+	node4-->|"except ValueError"|node5
+	node4-->|"except TypeError"|node6
+	node4-->|"Else"|node3
+	node5-->node3
+	node6-->node3
+```
+
+## Function 15
+### Source
+```python
+def try_except_else():
+    try:
+        print("try")
+    except:
+        print("except")
+    else:
+        print("else")
+    print("after")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;try#quot;)"]
+	node3["print(#quot;after#quot;)"]
+	node4["EXCEPTION DISPATCH"]
+	node5["print(#quot;except#quot;)"]
+	node6["print(#quot;else#quot;)"]
+	node0-->node2
+	node2-->node4
+	node3==>node1
+	node4-->|"except any exception"|node5
+	node4-->|"Else"|node6
+	node5-->node3
+	node6-->node3
+```
+
+## Function 16
+### Source
+```python
+def try_finally():
+    try:
+        print("try")
+    finally:
+        print("finally")
+    print("after")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;try#quot;)"]
+	node3["print(#quot;after#quot;)"]
+	node4["print(#quot;finally#quot;)"]
+	node5["RECOVERY"]
+	node0-->node2
+	node2-->node4
+	node3==>node1
+	node4-->node5
+	node5-->node3
+```
+
+## Function 17
+### Source
+```python
+def try_except_else_finally():
+    try:
+        print("try")
+    except:
+        print("except")
+    else:
+        print("else")
+    finally:
+        print("finally")
+    print("after")
+```
+
+### Control Flow Graph
+```mermaid
+flowchart TD
+	node0["START"]
+	node1((("EXIT")))
+	node2["print(#quot;try#quot;)"]
+	node3["print(#quot;after#quot;)"]
+	node4["EXCEPTION DISPATCH"]
+	node5["print(#quot;finally#quot;)"]
+	node6["RECOVERY"]
+	node7["print(#quot;except#quot;)"]
+	node8["print(#quot;else#quot;)"]
+	node0-->node2
+	node2-->node4
+	node3==>node1
+	node4-->|"except any exception"|node7
+	node4-->|"Else"|node8
+	node5-->node6
+	node6-->node3
+	node7-->node5
+	node8-->node5
+```
