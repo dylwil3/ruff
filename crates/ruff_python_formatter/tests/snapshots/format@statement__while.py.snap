@@ -90,14 +90,14 @@ while (
 
 while True:
     pass
+# leading for `else`
 else:
-    # leading for `else`
     pass
 
 while True:
     pass
+# trailing
 else:
-    # trailing
     pass
 
 
