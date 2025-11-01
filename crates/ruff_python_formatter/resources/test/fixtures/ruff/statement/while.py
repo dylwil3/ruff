@@ -28,3 +28,21 @@ while (
     and anotherCondition or aThirdCondition  # trailing third condition
 ):  # comment
     print("Do something")
+
+while True: pass
+    # leading for `else`
+else:
+    pass
+
+while True:
+    pass
+        # trailing
+else:
+    pass
+
+def foo():
+    while True:
+        pass
+# leading
+    else:
+        pass
